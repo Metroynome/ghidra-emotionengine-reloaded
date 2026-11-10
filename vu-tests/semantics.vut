@@ -374,3 +374,293 @@ asm	NOP	RGET.x VF03, R
 set vf02_x 0x00412345
 expect vf03_x 0x3fc12345
 run
+
+# ---- MAC and status flags ----
+# MAC: Z bits 0-3, S bits 4-7, U bits 8-11, O bits 12-15; in each group x is bit 3 and w bit 0.
+# Status: Z S U O in bits 0-3, I and D in bits 4-5, sticky copies in bits 6-11.
+
+test flags_zero_and_sign
+asm	SUB.xyzw VF01, VF02, VF03	NOP
+set vf02_x 1.0
+set vf02_y 1.0
+set vf02_z 2.0
+set vf03_x 1.0
+set vf03_y 2.0
+set vf03_z 1.0
+expect mac 0x49
+expect status 0xc3
+run
+
+test flags_only_dest_lanes
+# Lanes outside the dest mask read 0; status U (bit 2) clears but its sticky bit stays.
+asm	SUB.x VF01, VF02, VF03	NOP
+set status 0x104
+set vf02_y -5.0
+expect mac 0x8
+expect status 0x141
+run
+
+test flags_acc_forms
+asm	SUBA.xyzw ACC, VF00, VF02	NOP
+set vf02_x 1.0
+set vf02_y 1.0
+set vf02_z 1.0
+set vf02_w 1.0
+expect acc_x -1.0
+expect mac 0xe1
+expect status 0xc3
+run
+
+test flags_overflow
+asm	MUL.x VF01, VF02, VF03	NOP
+set vf02_x 1e38
+set vf03_x 1e38
+expect mac 0x8000
+expect status 0x208
+run
+
+test flags_underflow_sets_z
+asm	MUL.y VF01, VF02, VF03	NOP
+set vf02_y 1e-20
+set vf03_y 1e-20
+expect mac 0x404
+expect status 0x145
+run
+
+test flags_opmsub
+asm	OPMULA.xyz ACC, VF02, VF03	NOP
+asm	OPMSUB.xyz VF01, VF03, VF02	NOP
+set vf02_x 1.0
+set vf03_y 1.0
+expect mac 0xc
+expect status 0x41
+run
+
+test flags_madd_bc
+asm	MADDx.xy VF01, VF02, VF03x	NOP
+set acc_x 1.0
+set acc_y 1.0
+set vf02_x -1.0
+set vf02_y -2.0
+set vf03_x 1.0
+expect vf01_y -1.0
+expect mac 0x48
+expect status 0xc3
+run
+
+test flags_untouched_by_max_ftoi_clip
+asm	MAX.xyzw VF01, VF02, VF03	NOP
+asm	FTOI0.xyzw VF04, VF02	NOP
+asm	ABS.xyzw VF05, VF02	NOP
+set mac 0x1234
+set status 0x5
+expect mac 0x1234
+expect status 0x5
+run
+
+test flag_reads_see_result
+asm	SUB.xyzw VF01, VF02, VF03	NOP
+asm	NOP	FMAND VI01, VI02
+asm	NOP	FMEQ VI03, VI04
+asm	NOP	FMOR VI05, VI06
+asm	NOP	FSEQ VI07, 0x0c3
+asm	NOP	FSOR VI08, 0x100
+set vf02_x 1.0
+set vf02_y 1.0
+set vf02_z 2.0
+set vf03_x 1.0
+set vf03_y 2.0
+set vf03_z 1.0
+set vi02 0x41
+set vi04 0x49
+set vi06 0x100
+expect vi01 0x41
+expect vi03 0x1
+expect vi05 0x149
+expect vi07 0x1
+expect vi08 0x1c3
+run
+
+test div_by_zero_sets_d
+asm	NOP	DIV Q, VF02x, VF00x
+set vf02_x 1.0
+expect status 0x820
+run
+
+test div_zero_by_zero_sets_i
+asm	NOP	DIV Q, VF00x, VF00x
+expect status 0x410
+run
+
+test div_clears_i_d_keeps_sticky
+asm	NOP	DIV Q, VF02x, VF03x
+set status 0xc33
+set vf02_x 6.0
+set vf03_x 3.0
+expect q 2.0
+expect status 0xc03
+run
+
+test sqrt_negative_sets_i
+asm	NOP	SQRT Q, VF02x
+set status 0x23
+set vf02_x -4.0
+expect q 2.0
+expect status 0x413
+run
+
+test rsqrt_flags
+asm	NOP	RSQRT Q, VF02x, VF03x
+set vf02_x 8.0
+set vf03_x -4.0
+expect q 4.0
+expect status 0x410
+run
+
+test rsqrt_zero_sets_d
+asm	NOP	RSQRT Q, VF02x, VF00x
+set vf02_x 8.0
+expect status 0x820
+run
+
+# ---- Remaining instruction forms ----
+
+test q_i_and_bc_forms
+asm	ADDq.x VF01, VF02, Q	NOP
+asm	MULAx.yz ACC, VF02, VF03x	NOP
+asm	MINIi.w VF04, VF02, I	NOP
+set q 0.5
+set i 1.5
+set vf02_x 1.0
+set vf02_y 2.0
+set vf02_z 3.0
+set vf02_w 4.0
+set vf03_x 2.0
+expect vf01_x 1.5
+expect acc_y 4.0
+expect acc_z 6.0
+expect vf04_w 1.5
+run
+
+test itof_ftoi_scales
+asm	ITOF0.x VF01, VF02	NOP
+asm	ITOF15.y VF01, VF02	NOP
+asm	FTOI15.z VF01, VF03	NOP
+set vf02_x 0x3
+set vf02_y 0x4000
+set vf03_z 0.25
+expect vf01_x 3.0
+expect vf01_y 0.5
+expect vf01_z 0x2000
+run
+
+test move
+asm	NOP	MOVE.yz VF01, VF02
+set vf02_y 2.0
+set vf02_z 3.0
+set vf02_w 4.0
+expect vf01_y 2.0
+expect vf01_z 3.0
+expect vf01_w 0.0
+run
+
+test sqi_lqd
+asm	NOP	IADDIU VI02, VI00, 2
+asm	NOP	SQI.xw VF01, (VI02++)
+asm	NOP	LQD.y VF04, (--VI02)
+set vf01_x 1.0
+set vf01_w 4.0
+mem 0x24 7.0
+expect vi02 0x2
+expect vf04_y 7.0
+expectmem 0x20 1.0
+expectmem 0x2c 4.0
+run
+
+test ilwr_iswr
+asm	NOP	IADDIU VI02, VI00, 3
+asm	NOP	ISWR.z VI01, (VI02)
+asm	NOP	ILWR.z VI03, (VI02)
+set vi01 0xbeef
+expect vi03 0xbeef
+expectmem 0x38 0xbeef
+run
+
+test xtop_xitop
+asm	NOP	XTOP VI01
+asm	NOP	XITOP VI02
+set vu_top 0x123
+set vu_itop 0x45
+expect vi01 0x123
+expect vi02 0x45
+run
+
+test fceq
+asm	NOP	FCEQ VI01, 0x000123
+set clip 0x123
+expect vi01 0x1
+run
+
+test fcor_all_set
+asm	NOP	FCOR VI01, 0x000001
+set clip 0xfffffe
+expect vi01 0x1
+run
+
+test rxor
+asm	NOP	RXOR R, VF02x
+set r 0x3f800001
+set vf02_x 0x00000003
+expect r 0x3f800002
+run
+
+test efu_sums
+asm	NOP	ESADD P, VF02
+asm	NOP	MFP.x VF01, P
+asm	NOP	ERSADD P, VF02
+asm	NOP	MFP.y VF01, P
+asm	NOP	ERLENG P, VF03
+asm	NOP	MFP.z VF01, P
+set vf02_x 2.0
+set vf03_x 3.0
+set vf03_y 4.0
+expect vf01_x 4.0
+expect vf01_y 0.25
+expect vf01_z 0.2
+run
+
+test efu_scalars
+asm	NOP	ESQRT P, VF02x
+asm	NOP	MFP.x VF01, P
+asm	NOP	ERSQRT P, VF02x
+asm	NOP	MFP.y VF01, P
+asm	NOP	ERCPR P, VF02y
+asm	NOP	MFP.z VF01, P
+set vf02_x 16.0
+set vf02_y 4.0
+expect vf01_x 4.0
+expect vf01_y 0.25
+expect vf01_z 0.25
+run
+
+test jalr_links
+asm	NOP	IADDIU VI01, VI00, 4
+asm	NOP	JALR VI15, VI01
+asm	NOP	NOP
+asm	NOP	IADDIU VI02, VI00, 1
+asm	NOP	IADDIU VI03, VI00, 5
+expect vi15 0x3
+expect vi02 0x0
+expect vi03 0x5
+run
+
+test jr_jumps
+asm	NOP	IADDIU VI14, VI00, 4
+asm	NOP	JR VI14
+asm	NOP	IADDIU VI04, VI00, 9
+asm	NOP	IADDIU VI02, VI00, 1
+asm	NOP	IADDIU VI03, VI00, 5
+expect vi04 0x9
+expect vi02 0x0
+expect vi03 0x5
+run

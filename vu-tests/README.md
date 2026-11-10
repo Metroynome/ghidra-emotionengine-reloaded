@@ -21,7 +21,7 @@ Corpora:
 
 ## Semantics
 
-`semantics.vut` holds emulator tests in `dvp-as` syntax. `mktests.py` assembles them, and `EmuVU.java` runs each one in Ghidra's p-code emulator and checks the registers and VU memory it names:
+`semantics.vut` holds 64 emulator tests, covering the flags, the branch forms and every instruction except the opaque ones listed under known limits, in `dvp-as` syntax. `mktests.py` assembles them, and `EmuVU.java` runs each one in Ghidra's p-code emulator and checks the registers and VU memory it names:
 
 ```
 python mktests.py semantics.vut semantics_built.txt     # in the container
@@ -30,10 +30,21 @@ GHIDIS_SCRIPT=EmuVU.java GHIDIS_ARGS=semantics_built.txt bash ghidis.sh blank.bi
 
 ## Import
 
-`ghrun.sh ELF ImportVuMicrocode.java VU1 verify` builds the extension, imports an EE ELF, creates the VU program from its `.vutext` and decompiles every function.
+`ghrun.sh ELF ImportVuMicrocode.java VU1 verify` builds the extension, imports an EE ELF, creates the VU program from its `.vutext` and decompiles every function. The import makes a function at each program entry, after each E bit, and at each `bal`/`jalr` target.
+
+The decompiler's warnings on game microcode come from the code itself, not from the language:
+
+| Warning | Cause |
+|---|---|
+| Removing unreachable block | Constant propagation: a register set to a constant on the path from this entry decides a branch, or `max`/`mini` compare a constant (for example a vector derived from vf00) |
+| Could not recover jumptable / Treating indirect jump as call | `jr` through a register loaded at run time, a dispatch the decompiler cannot enumerate |
+| Instruction at X overlaps instruction at Y | A branch into another branch's delay slot |
+| Do nothing block with infinite loop | Spin traps in the game, such as a branch back to an `ibeq` whose register never changes |
+| Control flow encountered bad instruction data | A program that runs past the end of its upload into code from another upload |
 
 ## Known limits
 
-- Pipeline timing is not modelled: Q and P results arrive immediately, and there are no stalls.
-- MAC and status flags are not set by arithmetic; flag instructions read the flag registers as they stand.
+- Pipeline timing is not modelled, and p-code cannot model it: every instruction sees the results of all earlier ones. On the VU, FMAC results (and the MAC, status and clip flags they set) appear 4 cycles later, `div`/`sqrt` write Q after 7 cycles and `rsqrt` after 13, EFU results reach P after their own latency, and the pipeline stalls on a register that is still in flight. Code that relies on reading a stale value inside a latency window (common in hand-scheduled loops) decompiles and emulates as if it read the new value.
+- Arithmetic sets the MAC flags and status bits exactly from the IEEE result, but the result stays IEEE: where the VU clamps an overflow to +-0x7f7fffff, flushes an underflow to +-0 or gives +-0x7f7fffff for a division by zero, the result here is infinite, denormal or NaN. Exact clamping puts bit tests around every float operation in decompiled code. The VU also treats infinity and NaN operands as ordinary large numbers and denormal operands as zero; IEEE does not.
+- A result that underflows so far that IEEE rounds it to zero sets Z but not U.
 - EFU transcendentals (`esin`, `eatan`, `eatanxy`, `eatanxz`, `eexp`), `rnext` and `xgkick` are opaque p-code operations.

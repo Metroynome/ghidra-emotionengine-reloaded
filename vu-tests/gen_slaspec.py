@@ -14,9 +14,13 @@ Semantics
 - Branches and jumps run the upper half, then the delay slot, then transfer. bal and jalr are
   calls, jr vi15 is a return, and the E bit ends the program after its delay slot.
 - Data memory is its own space, addressed in 16-byte units that wrap at its size.
-- Not modelled: pipeline latencies (Q and P results arriving later, stalls) and the MAC and
-  status flags that arithmetic sets implicitly. Flag instructions read the flag registers as they
-  are.
+- add, sub, mul, madd, msub (every form) and opmula/opmsub set the MAC flags and status bits 0-3
+  with their sticky copies (see flags()). Results stay IEEE: where the VU clamps an overflow or
+  flushes an underflow, the result here is infinite or denormal, though the flags match. div, sqrt
+  and rsqrt set the I and D status bits; sqrt and rsqrt use the absolute value. Other
+  instructions leave the flags alone.
+- Not modelled: pipeline latencies. Q, P and flag results are visible to the very next
+  instruction, where the VU makes them visible only after their latency.
 """
 import re
 import sys
@@ -202,6 +206,7 @@ ID: l_id is l_id { }
 BTARG: dest is l_imm11 [ dest = inst_next + l_imm11 * 8; ] { export *:4 dest; }
 IMM15: val is l_hi4 & l_lo11 [ val = (l_hi4 << 11) | l_lo11; ] { export *[const]:2 val; }
 IMM12: val is l_bit21 & l_lo11 [ val = (l_bit21 << 11) | l_lo11; ] { export *[const]:2 val; }
+UDMASK: val is u_dest [ val = u_dest * 0x1111; ] { export *[const]:4 val; }
 ''')
 
 
@@ -244,7 +249,7 @@ def masked_write(kind, src, lanes=LANES):
 
 def tables_in(text):
 	"""Subtables and token fields the semantics use; SLEIGH requires them in the pattern."""
-	return set(re.findall(r'\b([RW](?:LFT|LFS|UFT|UFS|UFD)[XYZW]|[RW](?:IT|IS|ID)|RLFSF|RLFTF|UBCV|IMM15|IMM12'
+	return set(re.findall(r'\b([RW](?:LFT|LFS|UFT|UFS|UFD)[XYZW]|[RW](?:IT|IS|ID)|RLFSF|RLFTF|UBCV|IMM15|IMM12|UDMASK'
 		r'|C(?:UFD|UFT|ACC|LFT|ST)[XYZW]|CILW|l_imm11|l_imm5|l_imm24)\b', text))
 
 
@@ -262,6 +267,36 @@ def arith(op, a, b, acc, tag):
 		(tag, a, b, cmp, a, tag, tag, b, tag)), tag
 
 
+def flags(lanes=LANES):
+	"""Set the MAC and status flags from each lane's result r_<lane>.
+
+	An IEEE result that is infinite or NaN sets O, and a denormal sets U and Z, as the VU's
+	overflow and underflow do. The VU would also clamp such a result to +-0x7f7fffff or +-0; that
+	is left out because it would put bit tests around every float operation in decompiled code.
+	MAC holds Z, S, U and O in 4-bit groups, each ordered x (bit 3) to w (bit 0) like the dest
+	mask; lanes outside the dest mask read 0. Status bits 0-3 are Z, S, U and O for the whole
+	vector, and bits 6-9 are their sticky copies. Unless a flag instruction reads them, these
+	writes are dead and the decompiler drops them.
+	"""
+	body = []
+	for c in lanes:
+		body += ['\tlocal e_%s:4 = (r_%s >> 23) & 0xff;' % (c, c),
+			'\tlocal o_%s:4 = zext(e_%s == 0xff);' % (c, c),
+			'\tlocal u_%s:4 = zext((e_%s == 0) && ((r_%s & 0x7fffff) != 0));' % (c, c, c)]
+	terms = []
+	for k, c in enumerate(LANES):
+		bit = 3 - k
+		if c in lanes:
+			terms += ['(zext(((r_%s & 0x7fffffff) == 0) || (u_%s != 0)) << %d)' % (c, c, bit), '((r_%s >> 31) << %d)' % (c, bit + 4),
+				'(u_%s << %d)' % (c, bit + 8), '(o_%s << %d)' % (c, bit + 12)]
+	body.append('\tlocal fl:4 = (%s) & UDMASK;' % ' | '.join(terms))
+	body.append('\tmac = fl;')
+	body.append('\tlocal zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | '
+		'(zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);')
+	body.append('\tstatus = (status & 0xff0) | zsuo | (zsuo << 6);')
+	return '\n'.join(body)
+
+
 def upper_sem(op, src2, target):
 	"""Semantics for a lane-wise upper arithmetic instruction.
 
@@ -274,6 +309,8 @@ def upper_sem(op, src2, target):
 		if pre:
 			body.append(pre)
 		body.append('\tlocal r_%s:4 = %s;' % (c, expr))
+	if op not in ('max', 'mini'):
+		body.append(flags())
 	body.append(masked_write('UFD' if target == 'fd' else 'ACC', lambda c: 'r_%s' % c))
 	return '\n'.join(body)
 
@@ -304,9 +341,9 @@ for op11, n, base in ((0x2bc, 'adda', 'add'), (0x2bd, 'madda', 'madd'), (0x2be, 
 # Outer products: x uses y and z, y uses z and x, z uses x and y; w is untouched.
 ROT = {'x': ('y', 'z'), 'y': ('z', 'x'), 'z': ('x', 'y')}
 opmula = '\n'.join('\tlocal r_%s:4 = us_%s f* ut_%s;' % (c, ROT[c][0], ROT[c][1]) for c in 'xyz') + '\n' + \
-	masked_write('ACC', lambda c: 'r_%s' % c, 'xyz')
+	flags('xyz') + '\n' + masked_write('ACC', lambda c: 'r_%s' % c, 'xyz')
 opmsub = '\n'.join('\tlocal r_%s:4 = acc_%s f- (us_%s f* ut_%s);' % (c, c, ROT[c][0], ROT[c][1]) for c in 'xyz') + '\n' + \
-	masked_write('UFD', lambda c: 'r_%s' % c, 'xyz')
+	flags('xyz') + '\n' + masked_write('UFD', lambda c: 'r_%s' % c, 'xyz')
 upper.append(('"opmula"', 'u_op11=0x2fe', 'UACC^","^UFS^","^UFT', opmula))
 upper.append(('"opmsub"', 'u_op6=0x2e', 'UFD^","^UFS^","^UFT', opmsub))
 
@@ -375,6 +412,33 @@ def isw(ea_src):
 	return EA % ea_src + '\n' + masked_write('ST', lambda c: 'zext(RIT)')
 
 
+def qflags(inv, dbz):
+	return ('\tstatus = (status & 0xfcf) | (zext(%s) << 4) | (zext(%s) << 5) | (zext(%s) << 10) | (zext(%s) << 11);'
+		% (inv, dbz, inv, dbz))
+
+
+# A zero divisor sets D (I for 0/0). The VU's quotient is then the largest float with the sign of
+# fs xor ft; here it stays the IEEE infinity or NaN, as in flags().
+DIV = '\n'.join([
+	'\tlocal num:4 = RLFSF;',
+	'\tlocal den:4 = RLFTF;',
+	'\tlocal dz:1 = (den & 0x7fffffff) == 0;',
+	'\tlocal nz:1 = (num & 0x7fffffff) == 0;',
+	'\tq = num f/ den;',
+	qflags('dz && nz', 'dz && !nz')])
+# sqrt of a negative number takes its absolute value and sets I.
+SQRT = '\n'.join([
+	'\tlocal v:4 = RLFTF;',
+	'\tq = sqrt(abs(v));',
+	qflags('(v s< 0) && ((v & 0x7fffffff) != 0)', '0:1')])
+RSQRT = '\n'.join([
+	'\tlocal num:4 = RLFSF;',
+	'\tlocal den:4 = RLFTF;',
+	'\tlocal dz:1 = (den & 0x7fffffff) == 0;',
+	'\tq = num f/ sqrt(abs(den));',
+	qflags('(den s< 0) && !dz', 'dz')])
+
+
 def efu(expr):
 	return '\tp = %s;' % expr
 
@@ -417,9 +481,9 @@ lower = [
 	('"sqi."^LD LFS^",("^IT^"++)"', LS % 0x37d, store_q('RIT') + '\n\tWIT = RIT + 1;'),
 	('"lqd."^LD LFT^",(--"^IS^")"', LS % 0x37e, '\tlocal dec:2 = RIS - 1;\n\tWIS = dec;\n' + load_q('dec')),
 	('"sqd."^LD LFS^",(--"^IT^")"', LS % 0x37f, '\tlocal dec:2 = RIT - 1;\n\tWIT = dec;\n' + store_q('dec')),
-	('"div q,"^l_fs^LFSF^","^l_ft^LFTF', LS % 0x3bc, '\tq = RLFSF f/ RLFTF;'),
-	('"sqrt q,"^l_ft^LFTF', LS % 0x3bd, '\tq = sqrt(RLFTF);'),
-	('"rsqrt q,"^l_fs^LFSF^","^l_ft^LFTF', LS % 0x3be, '\tq = RLFSF f/ sqrt(RLFTF);'),
+	('"div q,"^l_fs^LFSF^","^l_ft^LFTF', LS % 0x3bc, DIV),
+	('"sqrt q,"^l_ft^LFTF', LS % 0x3bd, SQRT),
+	('"rsqrt q,"^l_fs^LFSF^","^l_ft^LFTF', LS % 0x3be, RSQRT),
 	('"waitq"', LS % 0x3bf, ''),
 	('"mtir" IT^","^l_fs^LFSF', LS % 0x3fc, '\tWIT = RLFSF:2;'),
 	('"mfir."^LD LFT^","^IS', LS % 0x3fd,

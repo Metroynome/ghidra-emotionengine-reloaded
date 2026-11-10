@@ -311,6 +311,7 @@ ID: l_id is l_id { }
 BTARG: dest is l_imm11 [ dest = inst_next + l_imm11 * 8; ] { export *:4 dest; }
 IMM15: val is l_hi4 & l_lo11 [ val = (l_hi4 << 11) | l_lo11; ] { export *[const]:2 val; }
 IMM12: val is l_bit21 & l_lo11 [ val = (l_bit21 << 11) | l_lo11; ] { export *[const]:2 val; }
+UDMASK: val is u_dest [ val = u_dest * 0x1111; ] { export *[const]:4 val; }
 
 # Lane commits: copy tr_<lane> to the destination when its dest bit is set.
 CUFDX: is u_dx=0 { }
@@ -360,11 +361,27 @@ CSTW: is l_dw=0 { }
 CSTW: is l_dw=1 { *[vumem]:4 (tr_ea + 12) = tr_w; }
 
 # Upper instructions. The u_res bits are always clear.
-UPPER: "add"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UFD & UFS {
+UPPER: "add"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f+ UBCV;
 	local r_y:4 = us_y f+ UBCV;
 	local r_z:4 = us_z f+ UBCV;
 	local r_w:4 = us_w f+ UBCV;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -374,11 +391,27 @@ UPPER: "add"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=0 & u_res=0 & UF & UD &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "sub"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=1 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UFD & UFS {
+UPPER: "sub"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=1 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f- UBCV;
 	local r_y:4 = us_y f- UBCV;
 	local r_z:4 = us_z f- UBCV;
 	local r_w:4 = us_w f- UBCV;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -388,11 +421,27 @@ UPPER: "sub"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=1 & u_res=0 & UF & UD &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "madd"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=2 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UFD & UFS {
+UPPER: "madd"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=2 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
 	local r_x:4 = acc_x f+ (us_x f* UBCV);
 	local r_y:4 = acc_y f+ (us_y f* UBCV);
 	local r_z:4 = acc_z f+ (us_z f* UBCV);
 	local r_w:4 = acc_w f+ (us_w f* UBCV);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -402,11 +451,27 @@ UPPER: "madd"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=2 & u_res=0 & UF & UD 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "msub"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=3 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UFD & UFS {
+UPPER: "msub"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=3 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
 	local r_x:4 = acc_x f- (us_x f* UBCV);
 	local r_y:4 = acc_y f- (us_y f* UBCV);
 	local r_z:4 = acc_z f- (us_z f* UBCV);
 	local r_w:4 = acc_w f- (us_w f* UBCV);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -484,11 +549,27 @@ UPPER: "mini"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=5 & u_res=0 & UF & UD 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "mul"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=6 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UFD & UFS {
+UPPER: "mul"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=6 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f* UBCV;
 	local r_y:4 = us_y f* UBCV;
 	local r_z:4 = us_z f* UBCV;
 	local r_w:4 = us_w f* UBCV;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -498,11 +579,27 @@ UPPER: "mul"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=6 & u_res=0 & UF & UD &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "mulq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x1c & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
+UPPER: "mulq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x1c & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f* uq;
 	local r_y:4 = us_y f* uq;
 	local r_z:4 = us_z f* uq;
 	local r_w:4 = us_w f* uq;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -546,11 +643,27 @@ UPPER: "maxi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x1d & u_ft=0 & u_res=0 & UF &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "muli"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x1e & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
+UPPER: "muli"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x1e & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f* ui;
 	local r_y:4 = us_y f* ui;
 	local r_z:4 = us_z f* ui;
 	local r_w:4 = us_w f* ui;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -594,11 +707,27 @@ UPPER: "minii"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x1f & u_ft=0 & u_res=0 & UF 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "addq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x20 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
+UPPER: "addq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x20 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f+ uq;
 	local r_y:4 = us_y f+ uq;
 	local r_z:4 = us_z f+ uq;
 	local r_w:4 = us_w f+ uq;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -608,11 +737,27 @@ UPPER: "addq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x20 & u_ft=0 & u_res=0 & UF &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "maddq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x21 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
+UPPER: "maddq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x21 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = acc_x f+ (us_x f* uq);
 	local r_y:4 = acc_y f+ (us_y f* uq);
 	local r_z:4 = acc_z f+ (us_z f* uq);
 	local r_w:4 = acc_w f+ (us_w f* uq);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -622,11 +767,27 @@ UPPER: "maddq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x21 & u_ft=0 & u_res=0 & UF 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "addi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x22 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
+UPPER: "addi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x22 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f+ ui;
 	local r_y:4 = us_y f+ ui;
 	local r_z:4 = us_z f+ ui;
 	local r_w:4 = us_w f+ ui;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -636,11 +797,27 @@ UPPER: "addi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x22 & u_ft=0 & u_res=0 & UF &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "maddi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x23 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
+UPPER: "maddi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x23 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = acc_x f+ (us_x f* ui);
 	local r_y:4 = acc_y f+ (us_y f* ui);
 	local r_z:4 = acc_z f+ (us_z f* ui);
 	local r_w:4 = acc_w f+ (us_w f* ui);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -650,11 +827,27 @@ UPPER: "maddi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x23 & u_ft=0 & u_res=0 & UF 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "subq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x24 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
+UPPER: "subq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x24 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f- uq;
 	local r_y:4 = us_y f- uq;
 	local r_z:4 = us_z f- uq;
 	local r_w:4 = us_w f- uq;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -664,11 +857,27 @@ UPPER: "subq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x24 & u_ft=0 & u_res=0 & UF &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "msubq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x25 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
+UPPER: "msubq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x25 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = acc_x f- (us_x f* uq);
 	local r_y:4 = acc_y f- (us_y f* uq);
 	local r_z:4 = acc_z f- (us_z f* uq);
 	local r_w:4 = acc_w f- (us_w f* uq);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -678,11 +887,27 @@ UPPER: "msubq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x25 & u_ft=0 & u_res=0 & UF 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "subi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x26 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
+UPPER: "subi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x26 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f- ui;
 	local r_y:4 = us_y f- ui;
 	local r_z:4 = us_z f- ui;
 	local r_w:4 = us_w f- ui;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -692,11 +917,27 @@ UPPER: "subi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x26 & u_ft=0 & u_res=0 & UF &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "msubi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x27 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
+UPPER: "msubi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x27 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = acc_x f- (us_x f* ui);
 	local r_y:4 = acc_y f- (us_y f* ui);
 	local r_z:4 = acc_z f- (us_z f* ui);
 	local r_w:4 = acc_w f- (us_w f* ui);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -706,11 +947,27 @@ UPPER: "msubi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x27 & u_ft=0 & u_res=0 & UF 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "add"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x28 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS & UFT {
+UPPER: "add"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x28 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
 	local r_x:4 = us_x f+ ut_x;
 	local r_y:4 = us_y f+ ut_y;
 	local r_z:4 = us_z f+ ut_z;
 	local r_w:4 = us_w f+ ut_w;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -720,11 +977,27 @@ UPPER: "add"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x28 & u_res=0 & UF & UD & C
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "madd"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x29 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS & UFT {
+UPPER: "madd"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x29 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
 	local r_x:4 = acc_x f+ (us_x f* ut_x);
 	local r_y:4 = acc_y f+ (us_y f* ut_y);
 	local r_z:4 = acc_z f+ (us_z f* ut_z);
 	local r_w:4 = acc_w f+ (us_w f* ut_w);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -734,11 +1007,27 @@ UPPER: "madd"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x29 & u_res=0 & UF & UD & 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "mul"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2a & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS & UFT {
+UPPER: "mul"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2a & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
 	local r_x:4 = us_x f* ut_x;
 	local r_y:4 = us_y f* ut_y;
 	local r_z:4 = us_z f* ut_z;
 	local r_w:4 = us_w f* ut_w;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -782,11 +1071,27 @@ UPPER: "max"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2b & u_res=0 & UF & UD & C
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "sub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2c & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS & UFT {
+UPPER: "sub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2c & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
 	local r_x:4 = us_x f- ut_x;
 	local r_y:4 = us_y f- ut_y;
 	local r_z:4 = us_z f- ut_z;
 	local r_w:4 = us_w f- ut_w;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -796,11 +1101,27 @@ UPPER: "sub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2c & u_res=0 & UF & UD & C
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "msub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2d & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS & UFT {
+UPPER: "msub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2d & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
 	local r_x:4 = acc_x f- (us_x f* ut_x);
 	local r_y:4 = acc_y f- (us_y f* ut_y);
 	local r_z:4 = acc_z f- (us_z f* ut_z);
 	local r_w:4 = acc_w f- (us_w f* ut_w);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -844,11 +1165,27 @@ UPPER: "mini"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2f & u_res=0 & UF & UD & 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "adda"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UFS {
+UPPER: "adda"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
 	local r_x:4 = us_x f+ UBCV;
 	local r_y:4 = us_y f+ UBCV;
 	local r_z:4 = us_z f+ UBCV;
 	local r_w:4 = us_w f+ UBCV;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -858,11 +1195,27 @@ UPPER: "adda"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=0 & u_re
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "suba"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=1 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UFS {
+UPPER: "suba"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=1 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
 	local r_x:4 = us_x f- UBCV;
 	local r_y:4 = us_y f- UBCV;
 	local r_z:4 = us_z f- UBCV;
 	local r_w:4 = us_w f- UBCV;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -872,11 +1225,27 @@ UPPER: "suba"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=1 & u_re
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "madda"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=2 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UFS {
+UPPER: "madda"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=2 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
 	local r_x:4 = acc_x f+ (us_x f* UBCV);
 	local r_y:4 = acc_y f+ (us_y f* UBCV);
 	local r_z:4 = acc_z f+ (us_z f* UBCV);
 	local r_w:4 = acc_w f+ (us_w f* UBCV);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -886,11 +1255,27 @@ UPPER: "madda"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=2 & u_r
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "msuba"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=3 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UFS {
+UPPER: "msuba"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=3 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
 	local r_x:4 = acc_x f- (us_x f* UBCV);
 	local r_y:4 = acc_y f- (us_y f* UBCV);
 	local r_z:4 = acc_z f- (us_z f* UBCV);
 	local r_w:4 = acc_w f- (us_w f* UBCV);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -900,11 +1285,27 @@ UPPER: "msuba"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=3 & u_r
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "mula"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=6 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UFS {
+UPPER: "mula"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=6 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
 	local r_x:4 = us_x f* UBCV;
 	local r_y:4 = us_y f* UBCV;
 	local r_z:4 = us_z f* UBCV;
 	local r_w:4 = us_w f* UBCV;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -914,11 +1315,27 @@ UPPER: "mula"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=6 & u_re
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "mulaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x1fc & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS {
+UPPER: "mulaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x1fc & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = us_x f* uq;
 	local r_y:4 = us_y f* uq;
 	local r_z:4 = us_z f* uq;
 	local r_w:4 = us_w f* uq;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -928,11 +1345,27 @@ UPPER: "mulaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x1fc & u_ft=0 & u_res=0 & 
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "mulai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x1fe & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS {
+UPPER: "mulai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x1fe & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = us_x f* ui;
 	local r_y:4 = us_y f* ui;
 	local r_z:4 = us_z f* ui;
 	local r_w:4 = us_w f* ui;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -942,11 +1375,27 @@ UPPER: "mulai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x1fe & u_ft=0 & u_res=0 & 
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "addaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x23c & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS {
+UPPER: "addaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x23c & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = us_x f+ uq;
 	local r_y:4 = us_y f+ uq;
 	local r_z:4 = us_z f+ uq;
 	local r_w:4 = us_w f+ uq;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -956,11 +1405,27 @@ UPPER: "addaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x23c & u_ft=0 & u_res=0 & 
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "maddaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x23d & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS {
+UPPER: "maddaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x23d & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = acc_x f+ (us_x f* uq);
 	local r_y:4 = acc_y f+ (us_y f* uq);
 	local r_z:4 = acc_z f+ (us_z f* uq);
 	local r_w:4 = acc_w f+ (us_w f* uq);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -970,11 +1435,27 @@ UPPER: "maddaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x23d & u_ft=0 & u_res=0 &
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "addai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x23e & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS {
+UPPER: "addai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x23e & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = us_x f+ ui;
 	local r_y:4 = us_y f+ ui;
 	local r_z:4 = us_z f+ ui;
 	local r_w:4 = us_w f+ ui;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -984,11 +1465,27 @@ UPPER: "addai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x23e & u_ft=0 & u_res=0 & 
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "maddai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x23f & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS {
+UPPER: "maddai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x23f & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = acc_x f+ (us_x f* ui);
 	local r_y:4 = acc_y f+ (us_y f* ui);
 	local r_z:4 = acc_z f+ (us_z f* ui);
 	local r_w:4 = acc_w f+ (us_w f* ui);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -998,11 +1495,27 @@ UPPER: "maddai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x23f & u_ft=0 & u_res=0 &
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "subaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x27c & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS {
+UPPER: "subaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x27c & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = us_x f- uq;
 	local r_y:4 = us_y f- uq;
 	local r_z:4 = us_z f- uq;
 	local r_w:4 = us_w f- uq;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -1012,11 +1525,27 @@ UPPER: "subaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x27c & u_ft=0 & u_res=0 & 
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "msubaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x27d & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS {
+UPPER: "msubaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x27d & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = acc_x f- (us_x f* uq);
 	local r_y:4 = acc_y f- (us_y f* uq);
 	local r_z:4 = acc_z f- (us_z f* uq);
 	local r_w:4 = acc_w f- (us_w f* uq);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -1026,11 +1555,27 @@ UPPER: "msubaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x27d & u_ft=0 & u_res=0 &
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "subai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x27e & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS {
+UPPER: "subai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x27e & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = us_x f- ui;
 	local r_y:4 = us_y f- ui;
 	local r_z:4 = us_z f- ui;
 	local r_w:4 = us_w f- ui;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -1040,11 +1585,27 @@ UPPER: "subai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x27e & u_ft=0 & u_res=0 & 
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "msubai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x27f & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS {
+UPPER: "msubai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x27f & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = acc_x f- (us_x f* ui);
 	local r_y:4 = acc_y f- (us_y f* ui);
 	local r_z:4 = acc_z f- (us_z f* ui);
 	local r_w:4 = acc_w f- (us_w f* ui);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -1054,11 +1615,27 @@ UPPER: "msubai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x27f & u_ft=0 & u_res=0 &
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "adda"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2bc & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS & UFT {
+UPPER: "adda"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2bc & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
 	local r_x:4 = us_x f+ ut_x;
 	local r_y:4 = us_y f+ ut_y;
 	local r_z:4 = us_z f+ ut_z;
 	local r_w:4 = us_w f+ ut_w;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -1068,11 +1645,27 @@ UPPER: "adda"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2bc & u_res=0 & UF & UD
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "madda"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2bd & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS & UFT {
+UPPER: "madda"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2bd & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
 	local r_x:4 = acc_x f+ (us_x f* ut_x);
 	local r_y:4 = acc_y f+ (us_y f* ut_y);
 	local r_z:4 = acc_z f+ (us_z f* ut_z);
 	local r_w:4 = acc_w f+ (us_w f* ut_w);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -1082,11 +1675,27 @@ UPPER: "madda"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2bd & u_res=0 & UF & U
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "mula"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2be & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS & UFT {
+UPPER: "mula"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2be & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
 	local r_x:4 = us_x f* ut_x;
 	local r_y:4 = us_y f* ut_y;
 	local r_z:4 = us_z f* ut_z;
 	local r_w:4 = us_w f* ut_w;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -1096,11 +1705,27 @@ UPPER: "mula"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2be & u_res=0 & UF & UD
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "suba"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fc & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS & UFT {
+UPPER: "suba"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fc & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
 	local r_x:4 = us_x f- ut_x;
 	local r_y:4 = us_y f- ut_y;
 	local r_z:4 = us_z f- ut_z;
 	local r_w:4 = us_w f- ut_w;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -1110,11 +1735,27 @@ UPPER: "suba"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fc & u_res=0 & UF & UD
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "msuba"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fd & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UFS & UFT {
+UPPER: "msuba"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fd & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
 	local r_x:4 = acc_x f- (us_x f* ut_x);
 	local r_y:4 = acc_y f- (us_y f* ut_y);
 	local r_z:4 = acc_z f- (us_z f* ut_z);
 	local r_w:4 = acc_w f- (us_w f* ut_w);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local e_w:4 = (r_w >> 23) & 0xff;
+	local o_w:4 = zext(e_w == 0xff);
+	local u_w:4 = zext((e_w == 0) && ((r_w & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13) | (zext(((r_w & 0x7fffffff) == 0) || (u_w != 0)) << 0) | ((r_w >> 31) << 4) | (u_w << 8) | (o_w << 12)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -1124,10 +1765,23 @@ UPPER: "msuba"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fd & u_res=0 & UF & U
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "opmula"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fe & u_res=0 & UF & UD & CACCX & CACCY & CACCZ & UACC & UFS & UFT {
+UPPER: "opmula"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fe & u_res=0 & UF & UD & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
 	local r_x:4 = us_y f* ut_z;
 	local r_y:4 = us_z f* ut_x;
 	local r_z:4 = us_x f* ut_y;
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -1135,10 +1789,23 @@ UPPER: "opmula"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fe & u_res=0 & UF & 
 	build CACCY;
 	build CACCZ;
 }
-UPPER: "opmsub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2e & u_res=0 & UF & UD & CUFDX & CUFDY & CUFDZ & UFD & UFS & UFT {
+UPPER: "opmsub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2e & u_res=0 & UF & UD & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
 	local r_x:4 = acc_x f- (us_y f* ut_z);
 	local r_y:4 = acc_y f- (us_z f* ut_x);
 	local r_z:4 = acc_z f- (us_x f* ut_y);
+	local e_x:4 = (r_x >> 23) & 0xff;
+	local o_x:4 = zext(e_x == 0xff);
+	local u_x:4 = zext((e_x == 0) && ((r_x & 0x7fffff) != 0));
+	local e_y:4 = (r_y >> 23) & 0xff;
+	local o_y:4 = zext(e_y == 0xff);
+	local u_y:4 = zext((e_y == 0) && ((r_y & 0x7fffff) != 0));
+	local e_z:4 = (r_z >> 23) & 0xff;
+	local o_z:4 = zext(e_z == 0xff);
+	local u_z:4 = zext((e_z == 0) && ((r_z & 0x7fffff) != 0));
+	local fl:4 = ((zext(((r_x & 0x7fffffff) == 0) || (u_x != 0)) << 3) | ((r_x >> 31) << 7) | (u_x << 11) | (o_x << 15) | (zext(((r_y & 0x7fffffff) == 0) || (u_y != 0)) << 2) | ((r_y >> 31) << 6) | (u_y << 10) | (o_y << 14) | (zext(((r_z & 0x7fffffff) == 0) || (u_z != 0)) << 1) | ((r_z >> 31) << 5) | (u_z << 9) | (o_z << 13)) & UDMASK;
+	mac = fl;
+	local zsuo:4 = zext((fl & 0xf) != 0) | (zext((fl & 0xf0) != 0) << 1) | (zext((fl & 0xf00) != 0) << 2) | (zext((fl & 0xf000) != 0) << 3);
+	status = (status & 0xff0) | zsuo | (zsuo << 6);
 	tr_x = r_x;
 	tr_y = r_y;
 	tr_z = r_z;
@@ -1433,13 +2100,24 @@ LOWER: "sqd."^LD LFS^",(--"^IT^")" is l_op7=0x40 & l_op11=0x37f & CSTW & CSTX & 
 	build CSTW;
 }
 LOWER: "div q,"^l_fs^LFSF^","^l_ft^LFTF is l_op7=0x40 & l_op11=0x3bc & LFSF & LFTF & RLFSF & RLFTF & l_fs & l_ft {
-	q = RLFSF f/ RLFTF;
+	local num:4 = RLFSF;
+	local den:4 = RLFTF;
+	local dz:1 = (den & 0x7fffffff) == 0;
+	local nz:1 = (num & 0x7fffffff) == 0;
+	q = num f/ den;
+	status = (status & 0xfcf) | (zext(dz && nz) << 4) | (zext(dz && !nz) << 5) | (zext(dz && nz) << 10) | (zext(dz && !nz) << 11);
 }
 LOWER: "sqrt q,"^l_ft^LFTF is l_op7=0x40 & l_op11=0x3bd & LFTF & RLFTF & l_ft & l_fsf=0 & l_fs=0 {
-	q = sqrt(RLFTF);
+	local v:4 = RLFTF;
+	q = sqrt(abs(v));
+	status = (status & 0xfcf) | (zext((v s< 0) && ((v & 0x7fffffff) != 0)) << 4) | (zext(0:1) << 5) | (zext((v s< 0) && ((v & 0x7fffffff) != 0)) << 10) | (zext(0:1) << 11);
 }
 LOWER: "rsqrt q,"^l_fs^LFSF^","^l_ft^LFTF is l_op7=0x40 & l_op11=0x3be & LFSF & LFTF & RLFSF & RLFTF & l_fs & l_ft {
-	q = RLFSF f/ sqrt(RLFTF);
+	local num:4 = RLFSF;
+	local den:4 = RLFTF;
+	local dz:1 = (den & 0x7fffffff) == 0;
+	q = num f/ sqrt(abs(den));
+	status = (status & 0xfcf) | (zext((den s< 0) && !dz) << 4) | (zext(dz) << 5) | (zext((den s< 0) && !dz) << 10) | (zext(dz) << 11);
 }
 LOWER: "waitq" is l_op7=0x40 & l_op11=0x3bf  & l_dest=0 & l_ft=0 & l_fs=0 {
 

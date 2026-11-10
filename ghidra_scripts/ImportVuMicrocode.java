@@ -23,6 +23,7 @@ import ghidra.program.model.address.AddressSet;
 import ghidra.program.model.lang.Language;
 import ghidra.program.model.lang.LanguageID;
 import ghidra.program.model.listing.Function;
+import ghidra.program.model.listing.Instruction;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.mem.MemoryBlock;
 import ghidra.program.model.symbol.SourceType;
@@ -108,6 +109,21 @@ public class ImportVuMicrocode extends GhidraScript {
 							String.format("%s_%04x", blockName, next.getOffset()), next,
 							new AddressSet(next, next), SourceType.ANALYSIS);
 						functions.add(g);
+					}
+				}
+				// bal and jalr call subroutines that return with jr vi15. Without a function of
+				// their own, a subroutine becomes part of each caller's body.
+				for (Instruction insn : vu.getListing().getInstructions(new AddressSet(entry, block.getEnd()), true)) {
+					if (!insn.getFlowType().isCall()) {
+						continue;
+					}
+					for (Address target : insn.getFlows()) {
+						if (block.contains(target) && vu.getFunctionManager().getFunctionAt(target) == null
+							&& vu.getListing().getInstructionAt(target) != null) {
+							functions.add(vu.getFunctionManager().createFunction(
+								String.format("%s_sub_%04x", blockName, target.getOffset()), target,
+								new AddressSet(target, target), SourceType.ANALYSIS));
+						}
 					}
 				}
 			}
