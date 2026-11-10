@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.1.39-vu.1
+
+- Added VU micro mode languages for VU0 and VU1 (`VU:LE:32:VU0`, `VU:LE:32:VU1`). Disassembly matches PS2SDK's `dvp-objdump`, and the p-code covers every instruction, including the MAC and status flags.
+- Added `ImportVuMicrocode.java`, which builds a VU program from the VIF MPG uploads in an EE program's `.vutext` (or another section, an address range or bare microcode), with functions at program entries, E-bit ends, subroutines and the addresses EE code passes to MSCAL.
+- Release builds include Ghidra 12.0.3 again.
+
 ## v2.1.39
 
 - Added support for Ghidra 12.2.
