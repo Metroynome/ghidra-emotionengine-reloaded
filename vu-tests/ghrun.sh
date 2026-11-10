@@ -13,7 +13,9 @@ work="$(mktemp -d)"
 settings="$work/settings"
 ext="$settings/ghidra/$(basename "$GHIDRA")/Extensions"
 mkdir -p "$ext" "$work/proj"
-(cd "$ext" && unzip -q "$repo"/dist/*.zip)
+# dist/ may hold builds for several Ghidra versions; take the newest for this one.
+zip="$(ls -t "$repo/dist/$(basename "$GHIDRA")"_*.zip | head -1)"
+(cd "$ext" && unzip -q "$zip")
 export JAVA_TOOL_OPTIONS="-Dapplication.settingsdir=$(cygpath -w "$settings")"
 cmd //c "$(cygpath -w "$GHIDRA/support/analyzeHeadless.bat")" "$(cygpath -w "$work/proj")" test \
 	-import "$(cygpath -w "$file")" -noanalysis -postScript "$script" "$@" > "${GHRUN_LOG:-ghrun.log}" 2>&1 || true

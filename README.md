@@ -6,6 +6,7 @@ This extension is based on the original [ghidra-emotionengine](https://github.co
 ## Features
 
 - Disassemble and decompile EE-specific instruction sets (MMI, VU0 macro mode, etc).
+- Disassemble, decompile and emulate VU0 and VU1 micro mode code (the `VU:LE:32:VU0` and `VU:LE:32:VU1` languages). Run `ImportVuMicrocode.java` on an EE program to build a VU program from the microcode in its `.vutext` section. See [vu-tests](vu-tests/README.md) for how the languages are tested and their known limits.
 - Recover data types, functions and global variables from ELF files with `.mdebug` sections with the included STABS Analyzer.
 - Import PCSX2 save states.
 - Fix references to global variables with the MIPS-R5900 Constant Reference Analyzer.
