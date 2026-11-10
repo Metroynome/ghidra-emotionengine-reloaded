@@ -479,10 +479,14 @@ public class ImportVuMicrocode extends GhidraScript {
 			&& !currentProgram.getLanguage().getLanguageID().toString().toLowerCase().contains("r5900")) {
 			return out;
 		}
+		long srcLo = sourceStart.getOffset(), srcHi = sourceEnd.getOffset();
 		for (MemoryBlock block : currentProgram.getMemory().getBlocks()) {
-			if (!block.isExecute() || !block.isInitialized() || block.contains(sourceStart)) {
+			// A raw memory dump is one block holding both the microcode and the EE code, so only
+			// the microcode's own words are left out, not the whole block.
+			if (!block.isExecute() || !block.isInitialized() || !block.getStart().getAddressSpace().isMemorySpace()) {
 				continue;
 			}
+			long base = block.getStart().getOffset();
 			int n = (int) (block.getSize() / 4);
 			int[] ins = new int[n];
 			byte[] bytes = new byte[n * 4];
@@ -492,9 +496,14 @@ public class ImportVuMicrocode extends GhidraScript {
 			}
 			int f0 = 0;
 			for (int k = 0; k <= n; k++) {
-				boolean end = k == n || (k >= 2 && ins[k - 2] == 0x03e00008);   // after jr ra and its slot
+				boolean inSource = k < n && base + 4L * k >= srcLo && base + 4L * k < srcHi;
+				boolean wasSource = k > 0 && base + 4L * (k - 1) >= srcLo && base + 4L * (k - 1) < srcHi;
+				// A function ends after jr ra and its delay slot, and at either edge of the microcode.
+				boolean end = k == n || (k >= 2 && ins[k - 2] == 0x03e00008) || inSource != wasSource;
 				if (end && k > f0) {
-					scanFunction(block, ins, f0, k, sourceStart.getOffset(), sourceEnd.getOffset(), out);
+					if (!wasSource) {
+						scanFunction(block, ins, f0, k, srcLo, srcHi, out);
+					}
 					f0 = k;
 				}
 			}

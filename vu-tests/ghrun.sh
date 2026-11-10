@@ -2,6 +2,8 @@
 # ghrun.sh FILE SCRIPT [ARGS...] : build the extension, install it in a private settings folder (the
 # real Ghidra install is untouched), import FILE with its normal loader and run a shipped script.
 # The headless log goes to ${GHRUN_LOG:-ghrun.log}.
+# GHRUN_IMPORT_ARGS adds import options, e.g. "-loader BinaryLoader -processor r5900:LE:32:default"
+# for a raw EE memory dump.
 set -e
 here="$(cd "$(dirname "$0")" && pwd)"
 repo="$(dirname "$here")"
@@ -18,5 +20,5 @@ zip="$(ls -t "$repo/dist/$(basename "$GHIDRA")"_*.zip | head -1)"
 (cd "$ext" && unzip -q "$zip")
 export JAVA_TOOL_OPTIONS="-Dapplication.settingsdir=$(cygpath -w "$settings")"
 cmd //c "$(cygpath -w "$GHIDRA/support/analyzeHeadless.bat")" "$(cygpath -w "$work/proj")" test \
-	-import "$(cygpath -w "$file")" -noanalysis -postScript "$script" "$@" > "${GHRUN_LOG:-ghrun.log}" 2>&1 || true
+	-import "$(cygpath -w "$file")" ${GHRUN_IMPORT_ARGS} -noanalysis -postScript "$script" "$@" > "${GHRUN_LOG:-ghrun.log}" 2>&1 || true
 rm -rf "$work"
