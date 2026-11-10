@@ -1,4 +1,4 @@
-// Create a VU micro mode program from the microcode in this EE program.
+// Create VU micro mode programs from the microcode in this EE program.
 //
 // By default the microcode is read from the .vutext section, which holds DMA chains of VIF
 // packets. Each VIF MPG command uploads microcode to a VU micro memory address. Uploads that
@@ -6,21 +6,28 @@
 // used starts a new one. Each microprogram becomes an overlay at its VU address, so microprograms
 // that share VU addresses never collide.
 //
+// Each upload runs on VU0 or VU1. By default (unit auto) an upload belongs to VU0 when EE code
+// hands its DMA chain to a function that writes the VIF0 DMA channel's registers (0x10008000);
+// everything else, and anything too big for VU0's 4 KB of micro memory, belongs to VU1. One
+// program is made per unit that has uploads, named after this program with _vu0 or _vu1.
+//
 // When a microprogram's code flows outside its own upload (into code another upload left resident
 // in micro memory) and exactly one other upload covers that address, that upload is added to the
 // microprogram's overlay too.
 //
 // Functions are made at each microprogram's start, after each E bit (the next program usually
-// starts there), at bal/jalr targets, and at addresses EE code passes to VIF MSCAL, MSCALF or MSCNT.
-// The EE call sites are noted in the function comments.
+// starts there), at bal/jalr targets, and at addresses EE code starts: VIF MSCAL, MSCALF and MSCNT
+// commands it builds, and VU0's vcallms. The EE call sites are noted in the function comments.
+// The new programs are marked as analyzed: Ghidra's auto-analysis knows nothing of VU code (it
+// turns hand-made calls, a b whose delay slot sets vi15, into calls that return to the wrong place).
 //
 // Script arguments, all optional, in any order (key:value or key=value). Run from the Script
 // Manager without arguments, the script asks for them.
-//   VU0 | VU1          target unit (default VU1)
+//   auto | VU0 | VU1   which unit the uploads run on (default auto; VU0 or VU1 puts all on one)
 //   section:NAME       read microcode from this EE section instead of .vutext
 //   range:START-END    read microcode from these EE addresses (hex, END exclusive)
 //   raw:VUADDR         the bytes are bare microcode for VU address VUADDR (hex), not VIF packets
-//   noentries          do not search EE code for MSCAL entry points
+//   noentries          do not mark entry points that EE code starts
 //   verify             decompile every function and print a summary, as the tests do
 //   show:FUNCTION      with verify, print that function's C
 //@category ghidra-emotionengine
@@ -34,6 +41,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import ghidra.app.cmd.disassemble.DisassembleCommand;
@@ -41,8 +49,11 @@ import ghidra.app.cmd.function.CreateFunctionCmd;
 import ghidra.app.decompiler.DecompInterface;
 import ghidra.app.decompiler.DecompileResults;
 import ghidra.app.script.GhidraScript;
+import ghidra.framework.model.DomainFile;
+import ghidra.framework.model.DomainFolder;
 import ghidra.program.database.ProgramDB;
 import ghidra.program.model.address.Address;
+import ghidra.program.model.address.AddressRange;
 import ghidra.program.model.address.AddressSet;
 import ghidra.program.model.address.AddressSpace;
 import ghidra.program.model.address.OverlayAddressSpace;
@@ -55,50 +66,70 @@ import ghidra.program.model.mem.Memory;
 import ghidra.program.model.mem.MemoryBlock;
 import ghidra.program.model.symbol.SourceType;
 import ghidra.program.util.DefaultLanguageService;
+import ghidra.program.util.GhidraProgramUtilities;
 
 public class ImportVuMicrocode extends GhidraScript {
 
 	private static final int VIF_MPG = 0x4a;
 	private static final Map<Integer, String> VIF_CALLS = Map.of(0x14, "MSCAL", 0x15, "MSCALF", 0x17, "MSCNT");
+	private static final Map<String, Long> MEMORY_SIZE = Map.of("VU0", 0x1000L, "VU1", 0x4000L);
 
-	/** One microprogram: consecutive MPG uploads. */
+	/** One MPG upload. */
+	private static class Upload {
+		long source;              // EE address of the MPG command
+		long vuAddress;           // VU micro memory address in bytes
+		byte[] code;
+		String unit;
+	}
+
+	/** One microprogram: consecutive uploads to consecutive addresses on one unit. */
 	private static class Microprogram {
 		String name;
+		String unit;
 		long source;              // EE address of the first MPG command (or of raw code)
-		long vuAddress;           // VU micro memory address in bytes
+		long vuAddress;
 		ByteArrayOutputStream code = new ByteArrayOutputStream();
-		AddressSpace space;       // its overlay space in the VU program
+		AddressSpace space;       // its overlay space in its VU program
 
 		long end() {
 			return vuAddress + code.size();
 		}
 	}
 
-	/** A VIF call EE code builds: the command, its VU address and where the EE builds it. */
-	private record EeCall(String command, long vuAddress, Address site, Set<Long> vutextRefs) {
+	/**
+	 * A VU program start EE code makes: the command, the VU address, where the EE code is, the
+	 * microcode addresses the same EE function points at, and the unit if the command says (vcallms
+	 * is VU0's; a VIF command could be for either VIF).
+	 */
+	private record EeCall(String command, long vuAddress, Address site, Set<Long> vutextRefs, String unit) {
 	}
 
 	private int uploads, rejected;
-	private long memorySize;
+	private final List<EeCall> eeCalls = new ArrayList<>();
+	private final Set<Long> vu0Chains = new TreeSet<>();
+	private final List<long[]> vif0Senders = new ArrayList<>();
 
 	@Override
 	protected void run() throws Exception {
-		String unit = "VU1", section = null, show = null;
+		String mode = "AUTO", section = null, show = null;
 		Address rangeStart = null, rangeEnd = null;
 		Long raw = null;
 		boolean verify = false, eeEntries = true;
 		String[] args = getScriptArgs();
 		if (args.length == 0 && !isRunningHeadless()) {
 			args = askString("Import VU microcode",
-				"Options: VU0 | VU1, section:NAME, range:START-END, raw:VUADDR, noentries, verify", "VU1").trim()
+				"Options: auto | VU0 | VU1, section:NAME, range:START-END, raw:VUADDR, noentries, verify", "auto").trim()
 					.split("\\s+");
 		}
 		for (String arg : args) {
 			// key:value and key=value are the same; Windows batch files split arguments at '='.
 			String a = arg.trim().replaceFirst("^(?i)(section|range|raw|show):", "$1=");
 			String lower = a.toLowerCase();
-			if (lower.equals("vu0") || lower.equals("vu1")) {
-				unit = a.toUpperCase();
+			if (lower.isEmpty()) {
+				continue;
+			}
+			if (lower.equals("vu0") || lower.equals("vu1") || lower.equals("auto")) {
+				mode = a.toUpperCase();
 			}
 			else if (lower.equals("verify")) {
 				verify = true;
@@ -124,7 +155,6 @@ public class ImportVuMicrocode extends GhidraScript {
 				show = a;   // older form: VU1 verify FUNCTION
 			}
 		}
-		memorySize = unit.equals("VU0") ? 0x1000 : 0x4000;
 
 		// The bytes to read.
 		Address sourceStart;
@@ -144,31 +174,76 @@ public class ImportVuMicrocode extends GhidraScript {
 			data = new byte[(int) block.getSize()];
 		}
 		currentProgram.getMemory().getBytes(sourceStart, data);
+		long srcLo = sourceStart.getOffset(), srcHi = srcLo + data.length;
 
-		List<Microprogram> programs;
+		List<Upload> found;
 		if (raw != null) {
-			Microprogram mp = new Microprogram();
-			mp.source = sourceStart.getOffset();
-			mp.vuAddress = raw;
-			mp.code.write(data, 0, data.length & ~7);
-			mp.name = String.format("raw_%08x", mp.source);
-			programs = List.of(mp);
+			Upload u = new Upload();
+			u.source = srcLo;
+			u.vuAddress = raw;
+			u.code = Arrays.copyOf(data, data.length & ~7);
+			found = List.of(u);
 			uploads = 1;
 		}
 		else {
-			programs = parse(data, sourceStart.getOffset());
+			found = parse(data, srcLo);
 		}
-		if (programs.isEmpty()) {
+		if (found.isEmpty()) {
 			printerr("No VIF MPG uploads found.");
 			return;
 		}
-		for (Microprogram mp : programs) {
-			if (mp.end() > memorySize) {
-				printerr(String.format("%s runs past the end of %s micro memory (0x%x).", mp.name, unit, memorySize));
-				return;
+
+		// EE code says which uploads are VU0's and where programs start.
+		if ((eeEntries || mode.equals("AUTO")) && raw == null) {
+			scanEe(srcLo, srcHi);
+		}
+		List<String> tooBig = new ArrayList<>();
+		for (Upload u : found) {
+			u.unit = !mode.equals("AUTO") ? mode : raw == null && inVu0Chain(u) ? "VU0" : "VU1";
+			if (u.unit.equals("VU0") && u.vuAddress + u.code.length > MEMORY_SIZE.get("VU0")) {
+				if (mode.equals("VU0")) {
+					tooBig.add(String.format("%08x (VU 0x%04x-0x%04x)", u.source, u.vuAddress, u.vuAddress + u.code.length));
+				}
+				else {
+					println(String.format("The upload at %08x is too big for VU0, so it is VU1's", u.source));
+					u.unit = "VU1";
+				}
 			}
 		}
+		if (!tooBig.isEmpty()) {
+			printerr(String.format("%d uploads do not fit in VU0's 4 KB of micro memory, so they are not VU0 code: %s. "
+				+ "Use auto or VU1.", tooBig.size(), String.join(", ", tooBig)));
+			return;
+		}
 
+		List<Microprogram> all = group(found, raw != null);
+		println(String.format("%d MPG uploads became %d microprograms", uploads, all.size()));
+		if (rejected > 0) {
+			println(String.format("Skipped %d MPG-like words whose data is not microcode", rejected));
+		}
+		if (mode.equals("AUTO") && raw == null) {
+			println(String.format("VU0: %d chains sent through VIF0 by %d EE functions", vu0Chains.size(),
+				vif0Senders.size()));
+			for (long chain : vu0Chains) {
+				println(String.format("VU0 chain %08x-%08x", chain, chainEnd(chain)));
+			}
+		}
+		for (String unit : List.of("VU0", "VU1")) {
+			List<Microprogram> programs = new ArrayList<>();
+			for (Microprogram mp : all) {
+				if (mp.unit.equals(unit)) {
+					programs.add(mp);
+				}
+			}
+			if (!programs.isEmpty()) {
+				importUnit(unit, programs, all, eeEntries && raw == null, verify, show);
+			}
+		}
+	}
+
+	/** Builds, checks and saves the program for one unit. */
+	private void importUnit(String unit, List<Microprogram> programs, List<Microprogram> all, boolean eeEntries,
+			boolean verify, String show) throws Exception {
 		Language language = DefaultLanguageService.getLanguageService()
 				.getLanguage(new LanguageID("VU:LE:32:" + unit));
 		String name = currentProgram.getName() + "_" + unit.toLowerCase();
@@ -176,8 +251,8 @@ public class ImportVuMicrocode extends GhidraScript {
 		Memory memory = vu.getMemory();
 		int tx = vu.startTransaction("Import VU microcode");
 		List<Function> functions = new ArrayList<>();
-		int resident = 0, unresolved = 0, eeApplied = 0;
-		List<EeCall> calls = List.of();
+		Map<Function, Map<String, Set<String>>> notes = new HashMap<>();
+		int resident = 0, unresolved = 0, eeApplied = 0, eeUsed = 0;
 		try {
 			for (Microprogram mp : programs) {
 				Address start = vu.getAddressFactory().getDefaultAddressSpace().getAddress(mp.vuAddress);
@@ -185,8 +260,8 @@ public class ImportVuMicrocode extends GhidraScript {
 				MemoryBlock block = memory.createInitializedBlock(mp.name, start, new ByteArrayInputStream(code),
 					code.length, monitor, true);
 				block.setExecute(true);
-				block.setComment(String.format("%s at %08x in %s", raw != null ? "Microcode" : "VIF MPG upload",
-					mp.source, currentProgram.getName()));
+				block.setComment(String.format("%s at %08x in %s", mp.name.startsWith("raw") ? "Microcode"
+					: "VIF MPG upload", mp.source, currentProgram.getName()));
 				mp.space = block.getStart().getAddressSpace();
 				disassemble(vu, mp);
 			}
@@ -215,7 +290,7 @@ public class ImportVuMicrocode extends GhidraScript {
 					break;
 				}
 				for (Microprogram mp : changed) {
-					for (ghidra.program.model.address.AddressRange r : spaceSet(memory, mp.space)) {
+					for (AddressRange r : spaceSet(memory, mp.space)) {
 						vu.getListing().clearCodeUnits(r.getMinAddress(), r.getMaxAddress(), false);
 					}
 					disassemble(vu, mp);
@@ -240,9 +315,9 @@ public class ImportVuMicrocode extends GhidraScript {
 				if (f != null) {
 					functions.add(f);
 				}
-				// A microprogram usually has several entry points, each started by an EE MSCAL and
-				// ending at an E bit; the next one normally begins right after that end. The E bit is
-				// bit 30 of the upper (second) word, and the instruction after it is the last one run.
+				// A microprogram usually has several entry points, each started by the EE and ending at
+				// an E bit; the next one normally begins right after that end. The E bit is bit 30 of
+				// the upper (second) word, and the instruction after it is the last one run.
 				for (Instruction insn : vu.getListing().getInstructions(body, true)) {
 					if ((memory.getInt(insn.getAddress().add(4)) & 0x40000000) == 0) {
 						continue;
@@ -272,29 +347,28 @@ public class ImportVuMicrocode extends GhidraScript {
 				}
 			}
 
-			if (eeEntries && raw == null) {
-				calls = findEeCalls(sourceStart, sourceStart.add(data.length));
-				for (EeCall call : calls) {
-					eeApplied += applyEeCall(vu, programs, call, functions);
+			if (eeEntries) {
+				for (EeCall call : eeCalls) {
+					int n = applyEeCall(vu, unit, programs, all, call, functions, notes);
+					eeApplied += n;
+					eeUsed += n > 0 ? 1 : 0;
 				}
-				writeNotes();
+				writeNotes(notes);
 			}
 
 			for (Function f : functions) {
 				CreateFunctionCmd.fixupFunctionBody(vu, f, monitor);
 			}
+			GhidraProgramUtilities.markProgramAnalyzed(vu);
 		}
 		finally {
 			vu.endTransaction(tx, true);
 		}
-		println(String.format("%d MPG uploads became %d microprograms in %s", uploads, programs.size(), name));
-		if (rejected > 0) {
-			println(String.format("Skipped %d MPG-like words whose data is not microcode", rejected));
-		}
-		println(String.format("Resident uploads added: %d; flows left outside the program: %d", resident, unresolved));
-		if (eeEntries && raw == null) {
-			println(String.format("EE code builds %d VIF calls with a VU address; %d marked entry points", calls.size(),
-				eeApplied));
+		println(String.format("%s: %d microprograms in %s", unit, programs.size(), name));
+		println(String.format("%s: resident uploads added: %d; flows left outside the program: %d", unit, resident,
+			unresolved));
+		if (eeEntries) {
+			println(String.format("%s: %d EE program starts apply; %d marked entry points", unit, eeUsed, eeApplied));
 		}
 
 		if (verify) {
@@ -309,7 +383,7 @@ public class ImportVuMicrocode extends GhidraScript {
 					continue;
 				}
 				ok++;
-				println("FUNCTION " + f.getName() + " at " + f.getEntryPoint()
+				println("FUNCTION " + unit + " " + f.getName() + " at " + f.getEntryPoint()
 					+ (f.getComment() != null ? " // " + f.getComment().replace("\n", " | ") : ""));
 				String c = r.getDecompiledFunction().getC();
 				if (f.getName().equals(show)) {
@@ -323,19 +397,19 @@ public class ImportVuMicrocode extends GhidraScript {
 				}
 			}
 			decomp.dispose();
-			println(String.format("VERIFY decompiled %d, failed %d, warning lines %d", ok, failed, warned));
+			println(String.format("VERIFY %s decompiled %d, failed %d, warning lines %d", unit, ok, failed, warned));
 		}
 
 		if (getState().getProject() != null) {
 			// Save next to the EE program, under a free name.
-			ghidra.framework.model.DomainFolder folder = currentProgram.getDomainFile() != null
+			DomainFolder folder = currentProgram.getDomainFile() != null
 				&& currentProgram.getDomainFile().getParent() != null ? currentProgram.getDomainFile().getParent()
 					: getState().getProject().getProjectData().getRootFolder();
 			String fileName = name;
 			for (int k = 2; folder.getFile(fileName) != null; k++) {
 				fileName = name + "_" + k;
 			}
-			ghidra.framework.model.DomainFile saved = folder.createFile(fileName, vu, monitor);
+			DomainFile saved = folder.createFile(fileName, vu, monitor);
 			println("Saved " + saved.getPathname() + " to the project.");
 		}
 		vu.release(this);
@@ -417,10 +491,9 @@ public class ImportVuMicrocode extends GhidraScript {
 		return found;
 	}
 
-	/** Walks the VIF stream for MPG commands, grouping uploads that continue one another. */
-	private List<Microprogram> parse(byte[] data, long base) {
-		List<Microprogram> programs = new ArrayList<>();
-		Microprogram current = null;
+	/** Walks the VIF stream for MPG commands. */
+	private List<Upload> parse(byte[] data, long base) {
+		List<Upload> out = new ArrayList<>();
 		int i = 0;
 		while (i + 4 <= data.length) {
 			int code = word(data, i);
@@ -433,19 +506,17 @@ public class ImportVuMicrocode extends GhidraScript {
 				}
 				long address = (code & 0xffffL) * 8;
 				int length = num * 8;
-				if (i + 4 + length > data.length || address + length > memorySize || !isMicrocode(data, i + 4, num)) {
+				if (i + 4 + length > data.length || address + length > MEMORY_SIZE.get("VU1")
+					|| !isMicrocode(data, i + 4, num)) {
 					rejected++;
 					i += 4;
 					continue;
 				}
-				if (current == null || address != current.end()) {
-					current = new Microprogram();
-					current.source = base + i;
-					current.vuAddress = address;
-					current.name = String.format("mpg_%08x", current.source);
-					programs.add(current);
-				}
-				current.code.write(data, i + 4, length);
+				Upload u = new Upload();
+				u.source = base + i;
+				u.vuAddress = address;
+				u.code = Arrays.copyOfRange(data, i + 4, i + 4 + length);
+				out.add(u);
 				uploads++;
 				i += 4 + length;
 			}
@@ -453,7 +524,25 @@ public class ImportVuMicrocode extends GhidraScript {
 				i += 4;
 			}
 		}
-		return programs;
+		return out;
+	}
+
+	/** Groups uploads that follow one another, on one unit and to consecutive addresses. */
+	private static List<Microprogram> group(List<Upload> found, boolean raw) {
+		List<Microprogram> out = new ArrayList<>();
+		Microprogram current = null;
+		for (Upload u : found) {
+			if (current == null || !current.unit.equals(u.unit) || u.vuAddress != current.end()) {
+				current = new Microprogram();
+				current.unit = u.unit;
+				current.source = u.source;
+				current.vuAddress = u.vuAddress;
+				current.name = String.format(raw ? "raw_%08x" : "mpg_%08x", u.source);
+				out.add(current);
+			}
+			current.code.write(u.code, 0, u.code.length);
+		}
+		return out;
 	}
 
 	/**
@@ -473,24 +562,64 @@ public class ImportVuMicrocode extends GhidraScript {
 		return (b[at] & 0xff) | (b[at + 1] & 0xff) << 8 | (b[at + 2] & 0xff) << 16 | (b[at + 3] & 0xff) << 24;
 	}
 
-	// ---- VIF calls built by EE code ----
+	// ---- DMA chains ----
 
 	/**
-	 * Finds VIF MSCAL, MSCALF and MSCNT commands that EE code builds with a constant VU address, for
-	 * example lui t7,0x1400 / lui t4,%hi(entry) / addiu t4,t4,%lo(entry) / sra t4,t4,3 / or t4,t4,t7.
-	 * Each function (code between jr ra returns) is scanned once, tracking registers that hold
-	 * constants. The function's references into the microcode source say which upload it uses.
+	 * The end of the DMA chain that starts at ref: cnt tags (id 1) continue to the next tag, an end
+	 * tag (id 7) ends after its data. Each tag is 16 bytes followed by QWC quadwords. If ref is not a
+	 * tag, the chain is taken to be the 256 bytes from ref.
 	 */
-	private List<EeCall> findEeCalls(Address sourceStart, Address sourceEnd) throws Exception {
-		List<EeCall> out = new ArrayList<>();
-		if (!currentProgram.getLanguage().getProcessor().toString().toLowerCase().contains("mips")
-			&& !currentProgram.getLanguage().getLanguageID().toString().toLowerCase().contains("r5900")) {
-			return out;
+	private long chainEnd(long ref) {
+		long pos = ref;
+		try {
+			for (int k = 0; k < 4096; k++) {
+				int tag = currentProgram.getMemory().getInt(toAddr(pos));
+				int qwc = tag & 0xffff, id = (tag >>> 28) & 7;
+				long next = pos + 16 + 16L * qwc;
+				if (id == 7) {
+					return next;
+				}
+				if (id != 1) {
+					break;
+				}
+				pos = next;
+			}
 		}
-		long srcLo = sourceStart.getOffset(), srcHi = sourceEnd.getOffset();
+		catch (Exception e) {
+			// not readable as a tag
+		}
+		return pos > ref ? pos : ref + 0x100;
+	}
+
+	private boolean inVu0Chain(Upload u) {
+		for (long ref : vu0Chains) {
+			if (u.source >= ref && u.source < chainEnd(ref)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// ---- EE code ----
+
+	/** Whether the target address runs EE code; only MIPS programs are scanned. */
+	private boolean isEe() {
+		return currentProgram.getLanguage().getProcessor().toString().toLowerCase().contains("mips")
+			|| currentProgram.getLanguage().getLanguageID().toString().toLowerCase().contains("r5900");
+	}
+
+	/** One stretch of EE code between jr ra returns, in a block's word array. */
+	private interface FunctionVisitor {
+		void visit(MemoryBlock block, int[] ins, int from, int to);
+	}
+
+	/**
+	 * Calls the visitor for each function in the executable blocks: code between jr ra returns,
+	 * leaving out the microcode's own words. A raw memory dump is one block holding both the
+	 * microcode and the EE code, so only the microcode is left out, not the whole block.
+	 */
+	private void forEachFunction(long srcLo, long srcHi, FunctionVisitor visitor) throws Exception {
 		for (MemoryBlock block : currentProgram.getMemory().getBlocks()) {
-			// A raw memory dump is one block holding both the microcode and the EE code, so only
-			// the microcode's own words are left out, not the whole block.
 			if (!block.isExecute() || !block.isInitialized() || !block.getStart().getAddressSpace().isMemorySpace()) {
 				continue;
 			}
@@ -510,31 +639,95 @@ public class ImportVuMicrocode extends GhidraScript {
 				boolean end = k == n || (k >= 2 && ins[k - 2] == 0x03e00008) || inSource != wasSource;
 				if (end && k > f0) {
 					if (!wasSource) {
-						scanFunction(block, ins, f0, k, srcLo, srcHi, out);
+						visitor.visit(block, ins, f0, k);
 					}
 					f0 = k;
 				}
 			}
 		}
-		return out;
 	}
 
-	private void scanFunction(MemoryBlock block, int[] ins, int from, int to, long srcLo, long srcHi,
-			List<EeCall> out) {
+	/**
+	 * Scans EE code twice. First for functions that send DMA through VIF0: they build an address of
+	 * the VIF0 channel's registers, 0x10008000-0x100083ff. Then each function, tracking constants:
+	 * VIF MSCAL, MSCALF and MSCNT commands built with a VU address (for example lui t7,0x1400 /
+	 * lui t4,%hi(entry) / addiu t4,t4,%lo(entry) / sra t4,t4,3 / or t4,t4,t7), vcallms, and the
+	 * microcode chains passed in a0 to a VIF0 sender, which are VU0's.
+	 */
+	private void scanEe(long srcLo, long srcHi) throws Exception {
+		if (!isEe()) {
+			return;
+		}
+		forEachFunction(srcLo, srcHi, (block, ins, from, to) -> {
+			if (buildsVif0Address(ins, from, to)) {
+				long base = block.getStart().getOffset();
+				vif0Senders.add(new long[] { base + 4L * from, base + 4L * to });
+				// A sender that names a chain itself sends that chain.
+				vu0Chains.addAll(scanFunction(block, ins, from, to, srcLo, srcHi, false));
+			}
+		});
+		forEachFunction(srcLo, srcHi, (block, ins, from, to) -> scanFunction(block, ins, from, to, srcLo, srcHi, true));
+	}
+
+	/** Whether the function builds lui r,0x1000 / ori r,r,0x80xx: a VIF0 DMA channel register. */
+	private static boolean buildsVif0Address(int[] ins, int from, int to) {
+		Set<Integer> hi1000 = new TreeSet<>();
+		for (int m = from; m < to; m++) {
+			int x = ins[m];
+			int op = x >>> 26, rs = (x >>> 21) & 31, rt = (x >>> 16) & 31, imm = x & 0xffff;
+			if (op == 0x0f) {
+				if (imm == 0x1000) {
+					hi1000.add(rt);
+				}
+				else {
+					hi1000.remove(rt);
+				}
+			}
+			else if (op == 0x0d && hi1000.contains(rs) && imm >= 0x8000 && imm < 0x8400) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isVif0Sender(long target) {
+		for (long[] r : vif0Senders) {
+			if (target >= r[0] && target < r[1]) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Tracks constants through one EE function. Returns the microcode addresses it points at; when
+	 * record is set, also records the program starts and VU0 chains it finds.
+	 */
+	private Set<Long> scanFunction(MemoryBlock block, int[] ins, int from, int to, long srcLo, long srcHi,
+			boolean record) {
 		Map<Integer, Long> regs = new HashMap<>();
 		Map<Integer, Long> hi = new HashMap<>();
 		Set<Long> refs = new TreeSet<>();
-		List<long[]> found = new ArrayList<>();
+		List<long[]> starts = new ArrayList<>();
+		long base = block.getStart().getOffset();
 		regs.put(0, 0L);
 		int clobberAt = -1;
-		for (int m = from; m < to; m++) {
+		boolean vif0Call = false;
+		for (int m = from; m <= to; m++) {
 			if (m == clobberAt) {
-				// A call clobbers the temporaries and ra once its delay slot has run; s0-s7, sp and fp
-				// survive it.
+				// The call's delay slot has run: a0 is the argument. Then the call clobbers the
+				// temporaries and ra; s0-s7, sp and fp survive it.
+				if (vif0Call && regs.containsKey(4) && regs.get(4) >= srcLo && regs.get(4) < srcHi && record) {
+					vu0Chains.add(regs.get(4));
+				}
+				vif0Call = false;
 				for (int r : new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 31 }) {
 					regs.remove(r);
 					hi.remove(r);
 				}
+			}
+			if (m == to) {
+				break;
 			}
 			int x = ins[m];
 			int op = x >>> 26, rs = (x >>> 21) & 31, rt = (x >>> 16) & 31, rd = (x >>> 11) & 31, sa = (x >>> 6) & 31;
@@ -542,6 +735,11 @@ public class ImportVuMicrocode extends GhidraScript {
 			long simm = (short) imm;
 			Integer dst = null;
 			Long val = null;
+			// vcallms: start the VU0 program at imm15 * 8.
+			if ((x & 0xffe0003f) == 0x4a000038) {
+				starts.add(new long[] { -1, ((x >>> 6) & 0x7fffL) * 8, m });
+				continue;
+			}
 			// Loads and stores at %lo(x)(base) with base = %hi(x).
 			if ((op >= 0x20 && op <= 0x2f || op == 0x37 || op == 0x3f || op == 0x1e || op == 0x1f) && hi.containsKey(rs)) {
 				long v = (hi.get(rs) + simm) & 0xffffffffL;
@@ -552,7 +750,6 @@ public class ImportVuMicrocode extends GhidraScript {
 			if (op == 0x0f) {                                     // lui
 				dst = rt;
 				val = (long) imm << 16;
-				hi.put(rt, val);
 			}
 			else if (op == 0x08 || op == 0x09 || op == 0x18 || op == 0x19) {   // addi addiu daddi daddiu
 				dst = rt;
@@ -599,7 +796,12 @@ public class ImportVuMicrocode extends GhidraScript {
 				dst = rd;                                         // MMI
 			}
 			else if (op == 0x03 || op == 0 && fn == 0x09) {
-				clobberAt = m + 2;                                // jal, jalr: after the delay slot
+				// jal, jalr: the call happens after the delay slot.
+				if (op == 0x03) {
+					long target = ((base + 4L * (m + 1)) & 0xf0000000L) | ((x & 0x3ffffffL) << 2);
+					vif0Call = isVif0Sender(target);
+				}
+				clobberAt = m + 2;
 				continue;
 			}
 			if (dst == null || dst == 0) {
@@ -616,37 +818,66 @@ public class ImportVuMicrocode extends GhidraScript {
 			regs.put(dst, val);
 			int cmd = (int) ((val >>> 24) & 0x7f);
 			if (VIF_CALLS.containsKey(cmd) && ((val >>> 16) & 0xff) == 0 && (val & 0xffff) != 0) {
-				found.add(new long[] { cmd, (val & 0xffff) * 8, m });
+				starts.add(new long[] { cmd, (val & 0xffff) * 8, m });
 			}
 		}
-		for (long[] f : found) {
-			out.add(new EeCall(VIF_CALLS.get((int) f[0]), f[1], block.getStart().add(4 * f[2]), refs));
+		if (record) {
+			for (long[] s : starts) {
+				Address site = block.getStart().add(4 * s[2]);
+				eeCalls.add(s[0] < 0 ? new EeCall("vcallms", s[1], site, Set.of(), "VU0")
+					: new EeCall(VIF_CALLS.get((int) s[0]), s[1], site, refs, null));
+			}
 		}
+		return refs;
 	}
 
 	/**
-	 * Marks the entry point an EE VIF call starts. When the EE function also points at an upload,
-	 * the entry belongs to that microprogram and gets a function if it has none. Otherwise only
-	 * microprograms that already have a function at that address are noted.
+	 * Marks the entry point an EE program start names. The entry belongs to the microprograms the
+	 * same EE function points at, or failing that to the one upload that covers the address. Such an
+	 * entry gets a function if it has none. Otherwise only functions already at that address are
+	 * noted, as possible targets.
 	 */
-	private int applyEeCall(Program vu, List<Microprogram> programs, EeCall call, List<Function> functions)
-			throws Exception {
+	private int applyEeCall(Program vu, String unit, List<Microprogram> programs, List<Microprogram> all,
+			EeCall call, List<Function> functions, Map<Function, Map<String, Set<String>>> notes) throws Exception {
+		if (call.unit() != null && !call.unit().equals(unit)) {
+			return 0;
+		}
+		// VIF commands carry 16 bits of address; one beyond this unit's memory is not for this unit.
+		long address = call.vuAddress();
+		if (address >= MEMORY_SIZE.get(unit)) {
+			return 0;
+		}
 		List<Microprogram> named = new ArrayList<>();
-		for (Microprogram mp : programs) {
+		for (Microprogram mp : all) {
 			for (long ref : call.vutextRefs()) {
-				if (mp.source >= ref && mp.source < ref + 0x100) {
+				if (mp.source >= ref && mp.source < chainEnd(ref)) {
 					named.add(mp);
 				}
 			}
 		}
+		if (named.isEmpty()) {
+			List<Microprogram> covering = new ArrayList<>();
+			for (Microprogram mp : all) {
+				if ((call.unit() == null || mp.unit.equals(call.unit())) && mp.vuAddress <= address && address < mp.end()) {
+					covering.add(mp);
+				}
+			}
+			if (covering.size() == 1) {
+				named = covering;
+			}
+		}
+		boolean sure = !named.isEmpty();
 		int applied = 0;
-		for (Microprogram mp : named.isEmpty() ? programs : named) {
-			Address a = at(mp, call.vuAddress() % memorySize);
+		for (Microprogram mp : sure ? named : programs) {
+			if (!programs.contains(mp)) {
+				continue;
+			}
+			Address a = at(mp, address);
 			if (vu.getListing().getInstructionAt(a) == null) {
 				continue;
 			}
 			Function f = vu.getFunctionManager().getFunctionAt(a);
-			if (f == null && !named.isEmpty()) {
+			if (f == null && sure) {
 				f = vu.getFunctionManager().createFunction(String.format("%s_%04x", mp.name, a.getOffset()), a,
 					new AddressSet(a), SourceType.ANALYSIS);
 				functions.add(f);
@@ -654,24 +885,20 @@ public class ImportVuMicrocode extends GhidraScript {
 			if (f == null) {
 				continue;
 			}
-			String key = named.isEmpty() ? "May be started by " + call.command() + " at EE"
-				: "Started by " + call.command() + " at EE";
-			notes.computeIfAbsent(f, k -> new java.util.TreeMap<>()).computeIfAbsent(key, k -> new TreeSet<>())
+			String key = (sure ? "Started by " : "May be started by ") + call.command() + " at EE";
+			notes.computeIfAbsent(f, k -> new TreeMap<>()).computeIfAbsent(key, k -> new TreeSet<>())
 					.add(call.site().toString());
 			applied++;
 		}
 		return applied;
 	}
 
-	/** EE call sites per function, grouped by note. */
-	private final Map<Function, Map<String, Set<String>>> notes = new HashMap<>();
-
-	private void writeNotes() {
+	private static void writeNotes(Map<Function, Map<String, Set<String>>> notes) {
 		for (Map.Entry<Function, Map<String, Set<String>>> e : notes.entrySet()) {
 			List<String> lines = new ArrayList<>();
 			for (Map.Entry<String, Set<String>> n : e.getValue().entrySet()) {
 				lines.add(n.getKey() + " " + String.join(", ", n.getValue())
-					+ (n.getKey().startsWith("May") ? " (that code does not say which upload is resident)" : ""));
+					+ (n.getKey().startsWith("May") ? " (it does not say which upload is resident)" : ""));
 			}
 			e.getKey().setComment(String.join("\n", lines));
 		}

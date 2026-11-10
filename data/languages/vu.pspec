@@ -1,5 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <processor_spec>
+	<!--
+		VU programs come from ImportVuMicrocode.java, which disassembles them and makes their
+		functions. Ghidra's analyzers assume a CPU with a stack, pointers and calls that return to the
+		next instruction; on VU code they make wrong calls (a b whose delay slot sets vi15 is a call
+		that returns elsewhere), switch tables and references, so they are off by default.
+	-->
+	<properties>
+		<property key="Analyzers.ASCII Strings" value="false"/>
+		<property key="Analyzers.Apply Data Archives" value="false"/>
+		<property key="Analyzers.Basic Constant Reference Analyzer" value="false"/>
+		<property key="Analyzers.Call Convention ID" value="false"/>
+		<property key="Analyzers.Create Address Tables" value="false"/>
+		<property key="Analyzers.Data Reference" value="false"/>
+		<property key="Analyzers.Decompiler Switch Analysis" value="false"/>
+		<property key="Analyzers.Demangler GNU" value="false"/>
+		<property key="Analyzers.Embedded Media" value="false"/>
+		<property key="Analyzers.Function ID" value="false"/>
+		<property key="Analyzers.Non-Returning Functions - Discovered" value="false"/>
+		<property key="Analyzers.Reference" value="false"/>
+		<property key="Analyzers.Shared Return Calls" value="false"/>
+		<property key="Analyzers.Stack" value="false"/>
+		<property key="Analyzers.Subroutine References" value="false"/>
+		<property key="Analyzers.Variadic Function Signature Override" value="false"/>
+	</properties>
 	<programcounter register="pc"/>
 </processor_spec>

@@ -6,8 +6,8 @@ Run in a container with PS2SDK (dvp-as, ee-as, ee-ld). The ELF's .vutext holds t
   B  uploads VU 0x100-0x117, the only upload there, so the import adds it to A's overlay.
   C  uploads VU 0x000-0x017 again, so it is a separate microprogram.
 Its .text has an EE function that builds MSCAL 0x108 and points at chain B, so B gets a function
-at 0x108 noting the EE call, and one that builds MSCALF 0x100 with no chain (a note only where a
-function already starts).
+at 0x108 noting the EE call, and one that builds MSCALF 0x100 with no chain, which still belongs to
+B because B is the only upload covering 0x100.
 """
 import os
 import struct
