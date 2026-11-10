@@ -327,8 +327,16 @@ public class ImportVuMicrocode extends GhidraScript {
 		}
 
 		if (getState().getProject() != null) {
-			getState().getProject().getProjectData().getRootFolder().createFile(name, vu, monitor);
-			println("Saved " + name + " to the project.");
+			// Save next to the EE program, under a free name.
+			ghidra.framework.model.DomainFolder folder = currentProgram.getDomainFile() != null
+				&& currentProgram.getDomainFile().getParent() != null ? currentProgram.getDomainFile().getParent()
+					: getState().getProject().getProjectData().getRootFolder();
+			String fileName = name;
+			for (int k = 2; folder.getFile(fileName) != null; k++) {
+				fileName = name + "_" + k;
+			}
+			ghidra.framework.model.DomainFile saved = folder.createFile(fileName, vu, monitor);
+			println("Saved " + saved.getPathname() + " to the project.");
 		}
 		vu.release(this);
 	}
