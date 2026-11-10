@@ -17,6 +17,19 @@ Corpora:
 - A fully random corpus of 64-bit words covers flag bits, invalid halves and unusual sequences.
 - `extract_mpg.py ELF DIR` pulls a game's microcode out of `.vutext`. Game microcode is never committed (see `.gitignore`).
 
+`checkgame.sh ELF NAME` runs the whole check for one game: extract, reference disassembly in the PS2SDK container (`CONTAINER`, default `projectryno-svo75`), Ghidra disassembly, compare, then the import with `verify`.
+
+Results on the Ratchet & Clank boot ELFs (every region and version of a game carries the same microcode):
+
+| Game | Builds | Uploads | Instructions match | Microprograms | Functions | Decompile failures |
+|---|---|---|---|---|---|---|
+| Ratchet & Clank | 4 | 43 | 9,230 / 9,230 | 13 | 78 | 0 |
+| Going Commando | 4 | 50 | 10,716 / 10,716 | 14 | 96 | 0 |
+| Up Your Arsenal | 3 | 53 | 11,648 / 11,648 | 16 | 104 | 0 |
+| Deadlocked | 4 | 62 | 13,232 / 13,232 | 22 | 140 | 0 |
+
+Instruction counts include one trailing nop. Some builds also have `.DVP.overlay..VUADDR.*` sections, one per upload, but they hold zeros: only their names and sizes carry information.
+
 `compare.py` allows only these differences, all because SLEIGH cannot print otherwise: whitespace, the reference's `<symbol+offset>` after branch targets, computed immediates in hex (`iaddiu`, `fs*`), and `loi` showing the raw word (compared through `%g`, as the reference prints it).
 
 ## Semantics
