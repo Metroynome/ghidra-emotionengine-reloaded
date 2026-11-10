@@ -38,7 +38,7 @@ def main():
 		elif stripped.startswith('test '):
 			out.append(stripped)
 		elif stripped == 'run':
-			for lower, upper in assemble(block):
+			for lower, upper in assemble(block) if block else []:
 				out.append('code 0x%08x 0x%08x' % (lower, upper))
 			out.append('run')
 			block = []

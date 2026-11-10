@@ -29,7 +29,6 @@ define context contextreg endslot = (0,0) noflow;
 define pcodeop vu_sin;
 define pcodeop vu_atan;
 define pcodeop vu_exp;
-define pcodeop vu_rnext;
 define pcodeop vu_xgkick;
 
 define token instr(64)
@@ -308,7 +307,9 @@ LFS: l_fs^LD is l_fs & LD { }
 IT: l_it is l_it { }
 IS: l_is is l_is { }
 ID: l_id is l_id { }
-BTARG: dest is l_imm11 [ dest = inst_next + l_imm11 * 8; ] { export *:4 dest; }
+# The target is shown as the reference shows it; the PC wraps at the end of micro memory.
+BTWRAP: wrapped is l_imm11 [ wrapped = (inst_next + l_imm11 * 8) & 0xfff; ] { export *:4 wrapped; }
+BTARG: dest is l_imm11 & BTWRAP [ dest = inst_next + l_imm11 * 8; ] { export BTWRAP; }
 IMM15: val is l_hi4 & l_lo11 [ val = (l_hi4 << 11) | l_lo11; ] { export *[const]:2 val; }
 IMM12: val is l_bit21 & l_lo11 [ val = (l_bit21 << 11) | l_lo11; ] { export *[const]:2 val; }
 UDMASK: val is u_dest [ val = u_dest * 0x1111; ] { export *[const]:4 val; }
@@ -2154,7 +2155,8 @@ LOWER: "iswr."^LD IT^",("^IS^")"^LD2 is l_op7=0x40 & l_op11=0x3ff & CSTW & CSTX 
 	build CSTW;
 }
 LOWER: "rnext."^LD LFT^",r" is l_op7=0x40 & l_op11=0x43c & CLFTW & CLFTX & CLFTY & CLFTZ & LD & LFT & l_is=0 {
-	r = vu_rnext(r);
+	local fb:4 = ((r >> 4) ^ (r >> 22)) & 1;
+	r = (((r << 1) ^ fb) & 0x7fffff) | 0x3f800000;
 	tr_x = r;
 	tr_y = r;
 	tr_z = r;
@@ -2280,15 +2282,15 @@ LBC: "ibgez" IS^","^BTARG is l_op7=0x2f & BTARG & IS & RIS & l_dest=0 & l_it=0 {
  export BTARG;
 }
 LJR: "jr" IS is l_op7=0x24 & l_is!=15 & IS & RIS & l_dest=0 & l_it=0 & l_lo11=0 {
-	lbr_target = zext(RIS) * 8;
+	lbr_target = (zext(RIS) * 8) & 0xfff;
 
 }
 LRET: "jr" IS is l_op7=0x24 & l_is=15 & IS & RIS & l_dest=0 & l_it=0 & l_lo11=0 {
-	lbr_target = zext(RIS) * 8;
+	lbr_target = (zext(RIS) * 8) & 0xfff;
 
 }
 LJALR: "jalr" IT^","^IS is l_op7=0x25 & IS & IT & RIS & WIT & l_dest=0 & l_lo11=0 {
-	lbr_target = zext(RIS) * 8;
+	lbr_target = (zext(RIS) * 8) & 0xfff;
 	local link:4 = inst_next >> 3;
 	WIT = link:2;
 

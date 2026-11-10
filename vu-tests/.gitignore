@@ -9,3 +9,4 @@ semantics_built.txt
 *_out.txt
 *_check.txt
 *.vsm
+*.elf

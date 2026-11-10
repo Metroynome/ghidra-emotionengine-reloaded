@@ -14,6 +14,9 @@ Semantics
 - Branches and jumps run the upper half, then the delay slot, then transfer. bal and jalr are
   calls, jr vi15 is a return, and the E bit ends the program after its delay slot.
 - Data memory is its own space, addressed in 16-byte units that wrap at its size.
+- Branch and jump targets wrap at the end of micro memory (16 KB on VU1, 4 KB on VU0), as the
+  VU's PC does. Branch targets are shown unwrapped, as the reference shows them.
+- rnext steps R's 23-bit LFSR exactly. EFU transcendentals and xgkick are p-code operations.
 - add, sub, mul, madd, msub (every form) and opmula/opmsub set the MAC flags and status bits 0-3
   with their sticky copies (see flags()). Results stay IEEE: where the VU clamps an overflow or
   flushes an underflow, the result here is infinite or denormal, though the flags match. div, sqrt
@@ -27,6 +30,7 @@ import sys
 
 variant, path = sys.argv[1], sys.argv[2]
 QMASK = {'vu0': 0xff, 'vu1': 0x3ff}[variant]       # data memory size in 16-byte units, minus one
+CMASK = {'vu0': 0xfff, 'vu1': 0x3fff}[variant]     # micro memory size in bytes, minus one
 LANES = 'xyzw'
 ONE = '0x3f800000:4'
 
@@ -82,7 +86,6 @@ define context contextreg endslot = (0,0) noflow;
 define pcodeop vu_sin;
 define pcodeop vu_atan;
 define pcodeop vu_exp;
-define pcodeop vu_rnext;
 define pcodeop vu_xgkick;
 ''' % vi)
 
@@ -203,7 +206,10 @@ LFS: l_fs^LD is l_fs & LD { }
 IT: l_it is l_it { }
 IS: l_is is l_is { }
 ID: l_id is l_id { }
-BTARG: dest is l_imm11 [ dest = inst_next + l_imm11 * 8; ] { export *:4 dest; }
+# The target is shown as the reference shows it; the PC wraps at the end of micro memory.
+BTWRAP: wrapped is l_imm11 [ wrapped = (inst_next + l_imm11 * 8) & %s; ] { export *:4 wrapped; }
+BTARG: dest is l_imm11 & BTWRAP [ dest = inst_next + l_imm11 * 8; ] { export BTWRAP; }'''
+	% hex(CMASK) + r'''
 IMM15: val is l_hi4 & l_lo11 [ val = (l_hi4 << 11) | l_lo11; ] { export *[const]:2 val; }
 IMM12: val is l_bit21 & l_lo11 [ val = (l_bit21 << 11) | l_lo11; ] { export *[const]:2 val; }
 UDMASK: val is u_dest [ val = u_dest * 0x1111; ] { export *[const]:4 val; }
@@ -491,7 +497,7 @@ lower = [
 	('"ilwr."^LD IT^",("^IS^")"^LD2', LS % 0x3fe, ilw('RIS')),
 	('"iswr."^LD IT^",("^IS^")"^LD2', LS % 0x3ff, isw('RIS')),
 	('"rnext."^LD LFT^",r"', LS % 0x43c,
-		'\tr = vu_rnext(r);\n' + lanes_write(lambda c: 'r')),
+		'\tlocal fb:4 = ((r >> 4) ^ (r >> 22)) & 1;\n\tr = (((r << 1) ^ fb) & 0x7fffff) | 0x3f800000;\n' + lanes_write(lambda c: 'r')),
 	('"rget."^LD LFT^",r"', LS % 0x43d, lanes_write(lambda c: 'r')),
 	('"rinit r,"^l_fs^LFSF', LS % 0x43e, '\tr = 0x3f800000 | (RLFSF & 0x7fffff);'),
 	('"rxor r,"^l_fs^LFSF', LS % 0x43f, '\tr = 0x3f800000 | ((r ^ RLFSF) & 0x7fffff);'),
@@ -526,10 +532,10 @@ BR = [
 	('"ibgtz" IS^","^BTARG', 'LBC', L7 % 0x2d, '\tlbr_cond = RIS s> 0;'),
 	('"iblez" IS^","^BTARG', 'LBC', L7 % 0x2e, '\tlbr_cond = RIS s<= 0;'),
 	('"ibgez" IS^","^BTARG', 'LBC', L7 % 0x2f, '\tlbr_cond = RIS s>= 0;'),
-	('"jr" IS', 'LJR', L7 % 0x24 + ' & l_is!=15', '\tlbr_target = zext(RIS) * 8;'),
-	('"jr" IS', 'LRET', L7 % 0x24 + ' & l_is=15', '\tlbr_target = zext(RIS) * 8;'),
+	('"jr" IS', 'LJR', L7 % 0x24 + ' & l_is!=15', '\tlbr_target = (zext(RIS) * 8) & %s;' % hex(CMASK)),
+	('"jr" IS', 'LRET', L7 % 0x24 + ' & l_is=15', '\tlbr_target = (zext(RIS) * 8) & %s;' % hex(CMASK)),
 	('"jalr" IT^","^IS', 'LJALR', L7 % 0x25,
-		'\tlbr_target = zext(RIS) * 8;\n\tlocal link:4 = inst_next >> 3;\n\tWIT = link:2;'),
+		'\tlbr_target = (zext(RIS) * 8) & %s;\n\tlocal link:4' % hex(CMASK) + ' = inst_next >> 3;\n\tWIT = link:2;'),
 ]
 RESERVED = {
 	'b': 'l_dest=0 & l_it=0 & l_is=0', 'bal': 'l_dest=0 & l_is=0',

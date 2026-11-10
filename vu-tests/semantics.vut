@@ -664,3 +664,73 @@ expect vi04 0x9
 expect vi02 0x0
 expect vi03 0x5
 run
+
+# ---- Opaque operations (modelled in EmuVU only), rnext, address wrap ----
+
+test efu_transcendentals
+asm	NOP	ESIN P, VF02x
+asm	NOP	MFP.x VF01, P
+asm	NOP	EATAN P, VF02y
+asm	NOP	MFP.y VF01, P
+asm	NOP	EEXP P, VF02y
+asm	NOP	MFP.z VF01, P
+set vf02_x 0.5
+set vf02_y 1.0
+expect vf01_x 0x3ef57744
+expect vf01_y 0x3f490fdb
+expect vf01_z 0x3ebc5ab2
+run
+
+test efu_atan_pairs
+asm	NOP	EATANxy P, VF02
+asm	NOP	MFP.x VF01, P
+asm	NOP	EATANxz P, VF02
+asm	NOP	MFP.y VF01, P
+set vf02_x 2.0
+set vf02_y 2.0
+set vf02_z -2.0
+expect vf01_x 0x3f490fdb
+expect vf01_y 0xbf490fdb
+run
+
+test xgkick_address
+asm	NOP	IADDIU VI01, VI00, 0x10
+asm	NOP	XGKICK VI01
+expect xgkick 0x100
+run
+
+test rnext_steps_lfsr
+# R advances as a 23-bit LFSR: shift left, feed back bit 4 xor bit 22.
+asm	NOP	RNEXT.x VF01, R
+asm	NOP	RINIT R, VF02x
+asm	NOP	RNEXT.y VF01, R
+set r 0x3f812345
+set vf02_x 0x00000010
+expect vf01_x 0x3f82468a
+expect vf01_y 0x3f800021
+expect r 0x3f800021
+run
+
+test branch_wraps_at_end_of_micro_memory
+# B with offset -2 from address 0 goes to 0x3ff8 on VU1 (16 KB of micro memory), not -8.
+only VU1
+code 0x400007fe 0x000002ff
+code 0x8000033c 0x000002ff
+expect pc 0x3ff8
+run
+
+test branch_wraps_vu0
+# VU0 has 4 KB of micro memory.
+only VU0
+code 0x400007fe 0x000002ff
+code 0x8000033c 0x000002ff
+expect pc 0xff8
+run
+
+test jr_wraps_at_end_of_micro_memory
+# vi01 * 8 = 0x4018 wraps to 0x18, the padding after the code, which then runs on to the stop.
+asm	NOP	IADDIU VI01, VI00, 0x803
+asm	NOP	JR VI01
+asm	NOP	NOP
+expect pc 0x20
+run

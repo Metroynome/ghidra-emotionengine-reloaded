@@ -5,8 +5,9 @@
 //   code HEXLOWER HEXUPPER   one instruction (words as numbers, e.g. 0x8000033c 0x000002ff)
 //   set REG VALUE        initial register value (vfNN_x lanes take float text like 1.5 or 0xHEX)
 //   mem ADDR VALUE       initial 32-bit VU data memory word
-//   expect REG VALUE     expected register value after the run
+//   expect REG VALUE     expected register value after the run ("xgkick" checks the last xgkick)
 //   expectmem ADDR VALUE expected 32-bit VU data memory word
+//   only UNIT            run this test only on that language (VU0 or VU1)
 //   run                  execute from address 0 until the program ends or 64 instructions pass
 //@category PS2
 
@@ -19,6 +20,9 @@ import java.util.List;
 
 import ghidra.app.emulator.EmulatorHelper;
 import ghidra.app.script.GhidraScript;
+import ghidra.pcode.emulate.BreakCallBack;
+import ghidra.pcode.memstate.MemoryState;
+import ghidra.pcode.pcoderaw.PcodeOpRaw;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSpace;
 import ghidra.program.model.lang.Register;
@@ -27,6 +31,25 @@ public class EmuVU extends GhidraScript {
 
 	private PrintWriter out;
 	private int passed, failed;
+	private Long lastKick;
+	private String only;
+
+	/** A CALLOTHER that maps one 32-bit float to another. */
+	private static class FloatOp extends BreakCallBack {
+		private final java.util.function.DoubleUnaryOperator f;
+
+		FloatOp(java.util.function.DoubleUnaryOperator f) {
+			this.f = f;
+		}
+
+		@Override
+		public boolean pcodeCallback(PcodeOpRaw op) {
+			MemoryState m = emulate.getMemoryState();
+			float x = Float.intBitsToFloat((int) m.getValue(op.getInput(1)));
+			m.setValue(op.getOutput(), Float.floatToRawIntBits((float) f.applyAsDouble(x)) & 0xffffffffL);
+			return true;
+		}
+	}
 
 	@Override
 	protected void run() throws Exception {
@@ -44,8 +67,10 @@ public class EmuVU extends GhidraScript {
 			}
 			String[] f = line.split("\\s+");
 			switch (f[0]) {
+				case "only" -> only = f[1];
 				case "test" -> {
 					name = f[1];
+					only = null;
 					code.clear(); sets.clear(); mems.clear(); expects.clear(); expectMems.clear();
 				}
 				case "code" -> code.add(new long[] { Long.decode(f[1]), Long.decode(f[2]) });
@@ -71,6 +96,10 @@ public class EmuVU extends GhidraScript {
 	private void runTest(String name, List<long[]> code, List<String[]> sets, List<String[]> mems,
 			List<String[]> expects, List<String[]> expectMems) throws Exception {
 		// Write the code into program memory (address 0 onward), with nop padding after it.
+		if (only != null && !currentProgram.getLanguageID().toString().endsWith(only)) {
+			out.printf("SKIP %s (%s only)%n", name, only);
+			return;
+		}
 		Address base = currentProgram.getAddressFactory().getDefaultAddressSpace().getAddress(0);
 		int tx = currentProgram.startTransaction("test " + name);
 		try {
@@ -89,7 +118,21 @@ public class EmuVU extends GhidraScript {
 			currentProgram.endTransaction(tx, true);
 		}
 		EmulatorHelper emu = new EmulatorHelper(currentProgram);
+		lastKick = null;
 		try {
+			// The language leaves EFU transcendentals and xgkick as p-code operations. Model them
+			// here as the VU manual defines them, so tests can run code that uses them: esin is sin,
+			// eatan is atan, eexp is e^-x. xgkick is recorded; "expect xgkick ADDRESS" checks it.
+			emu.registerCallOtherCallback("vu_sin", new FloatOp(x -> Math.sin(x)));
+			emu.registerCallOtherCallback("vu_atan", new FloatOp(x -> Math.atan(x)));
+			emu.registerCallOtherCallback("vu_exp", new FloatOp(x -> Math.exp(-x)));
+			emu.registerCallOtherCallback("vu_xgkick", new BreakCallBack() {
+				@Override
+				public boolean pcodeCallback(PcodeOpRaw op) {
+					lastKick = emulate.getMemoryState().getValue(op.getInput(1));
+					return true;
+				}
+			});
 			AddressSpace vumem = currentProgram.getAddressFactory().getAddressSpace("vumem");
 			for (String[] s : sets) {
 				emu.writeRegister(s[1], parseValue(s[1], s[2]));
@@ -116,6 +159,14 @@ public class EmuVU extends GhidraScript {
 			}
 			List<String> problems = new ArrayList<>();
 			for (String[] e : expects) {
+				if (e[1].equals("xgkick")) {
+					long want = Long.decode(e[2]);
+					if (lastKick == null || lastKick != want) {
+						problems.add(String.format("xgkick=%s want 0x%x", lastKick == null ? "none"
+							: String.format("0x%x", lastKick), want));
+					}
+					continue;
+				}
 				Register r = currentProgram.getRegister(e[1]);
 				BigInteger got = emu.readRegister(r);
 				BigInteger want = parseValue(e[1], e[2]);

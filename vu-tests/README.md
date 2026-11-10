@@ -21,16 +21,21 @@ Corpora:
 
 ## Semantics
 
-`semantics.vut` holds 64 emulator tests, covering the flags, the branch forms and every instruction except the opaque ones listed under known limits, in `dvp-as` syntax. `mktests.py` assembles them, and `EmuVU.java` runs each one in Ghidra's p-code emulator and checks the registers and VU memory it names:
+`semantics.vut` holds 71 emulator tests in `dvp-as` syntax, covering every instruction, the flags, the branch forms and address wrap. `mktests.py` assembles them, and `EmuVU.java` runs each one in Ghidra's p-code emulator and checks the registers and VU memory it names. EmuVU models the p-code operations the language leaves opaque as the VU manual defines them (`esin` is sin, `eatan` is atan, `eexp` is e^-x) and records `xgkick` addresses.
 
 ```
 python mktests.py semantics.vut semantics_built.txt     # in the container
 GHIDIS_SCRIPT=EmuVU.java GHIDIS_ARGS=semantics_built.txt bash ghidis.sh blank.bin result.txt
+VU_SLASPEC=vu0.slaspec GHIDIS_SCRIPT=EmuVU.java GHIDIS_ARGS=semantics_built.txt bash ghidis.sh blank.bin result0.txt
 ```
 
 ## Import
 
-`ghrun.sh ELF ImportVuMicrocode.java VU1 verify` builds the extension, imports an EE ELF, creates the VU program from its `.vutext` and decompiles every function. The import makes a function at each program entry, after each E bit, and at each `bal`/`jalr` target.
+`ghrun.sh ELF ImportVuMicrocode.java VU1 verify` builds the extension, imports an EE ELF, creates the VU program from its `.vutext` and decompiles every function, listing each function and its comment. Options (see the script's header) choose another section (`section:NAME`), an address range (`range:START-END`) or bare microcode (`raw:VUADDR`); use `key:value` here, because Windows batch files split arguments at `=`.
+
+The import makes a function at each program entry, after each E bit, at each `bal`/`jalr` target, and at each VU address that EE code passes to VIF MSCAL, MSCALF or MSCNT. It finds those by following constants through each EE function, for example `lui t7,0x1400` / `lui t4,%hi(entry)` / `addiu t4,t4,%lo(entry)` / `sra t4,t4,3` / `or t4,t4,t7`. When the same EE function also points at an upload in `.vutext`, the entry belongs to that upload; otherwise the call is only noted on functions that already start at that address. Code that branches outside its own upload gets the one other upload that covers the target added to its overlay, as resident code. MPG commands whose data is not microcode (upper words with reserved bits set) are skipped, so other data sections can be searched.
+
+`mkimport.py OUT.elf` (in the container) builds a small EE ELF that exercises these: a branch into a resident upload, an MSCAL tied to an upload, and one that is not.
 
 The decompiler's warnings on game microcode come from the code itself, not from the language:
 
@@ -40,11 +45,10 @@ The decompiler's warnings on game microcode come from the code itself, not from 
 | Could not recover jumptable / Treating indirect jump as call | `jr` through a register loaded at run time, a dispatch the decompiler cannot enumerate |
 | Instruction at X overlaps instruction at Y | A branch into another branch's delay slot |
 | Do nothing block with infinite loop | Spin traps in the game, such as a branch back to an `ibeq` whose register never changes |
-| Control flow encountered bad instruction data | A program that runs past the end of its upload into code from another upload |
 
 ## Known limits
 
 - Pipeline timing is not modelled, and p-code cannot model it: every instruction sees the results of all earlier ones. On the VU, FMAC results (and the MAC, status and clip flags they set) appear 4 cycles later, `div`/`sqrt` write Q after 7 cycles and `rsqrt` after 13, EFU results reach P after their own latency, and the pipeline stalls on a register that is still in flight. Code that relies on reading a stale value inside a latency window (common in hand-scheduled loops) decompiles and emulates as if it read the new value.
 - Arithmetic sets the MAC flags and status bits exactly from the IEEE result, but the result stays IEEE: where the VU clamps an overflow to +-0x7f7fffff, flushes an underflow to +-0 or gives +-0x7f7fffff for a division by zero, the result here is infinite, denormal or NaN. Exact clamping puts bit tests around every float operation in decompiled code. The VU also treats infinity and NaN operands as ordinary large numbers and denormal operands as zero; IEEE does not.
 - A result that underflows so far that IEEE rounds it to zero sets Z but not U.
-- EFU transcendentals (`esin`, `eatan`, `eatanxy`, `eatanxz`, `eexp`), `rnext` and `xgkick` are opaque p-code operations.
+- EFU transcendentals (`esin`, `eatan`, `eatanxy`, `eatanxz`, `eexp`) and `xgkick` are p-code operations, so the decompiler shows them as calls. Ghidra's own emulator needs a callback for each, as `EmuVU.java` registers.
