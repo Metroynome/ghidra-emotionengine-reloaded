@@ -13,12 +13,12 @@ ext="$settings/ghidra/$(basename "$GHIDRA")/Extensions/ghidra-emotionengine-relo
 mkdir -p "$ext" "$work/proj"
 cp -r "$repo/data" "$repo/extension.properties" "$repo/Module.manifest" "$ext/"
 sed -i 's/@extname@/ghidra-emotionengine-reloaded/; s/@extversion@/12.0.3/' "$ext/extension.properties"
-(cd "$ext/data/languages" && cmd //c "$(cygpath -w "$GHIDRA/support/sleigh.bat")" vu.slaspec > "$work/sleigh.log" 2>&1) || { tail -20 "$work/sleigh.log"; exit 1; }
+(cd "$ext/data/languages" && cmd //c "$(cygpath -w "$GHIDRA/support/sleigh.bat")" ${VU_SLASPEC:-vu1.slaspec} > "$work/sleigh.log" 2>&1) || { tail -20 "$work/sleigh.log"; exit 1; }
 grep -E "ERROR|error" "$work/sleigh.log" && exit 1 || true
 export JAVA_TOOL_OPTIONS="-Dapplication.settingsdir=$(cygpath -w "$settings")"
 cmd //c "$(cygpath -w "$GHIDRA/support/analyzeHeadless.bat")" "$(cygpath -w "$work/proj")" vu \
 	-import "$(cygpath -w "$1")" -loader BinaryLoader -processor "VU:LE:32:VU1" -noanalysis \
-	-scriptPath "$(cygpath -w "$here")" -postScript DumpVU.java "$(cygpath -w "$(realpath -m "$2")")" > "$work/headless.log" 2>&1 \
+	-scriptPath "$(cygpath -w "$here")" -postScript ${GHIDIS_SCRIPT:-DumpVU.java} "$(cygpath -w "$(realpath -m "$2")")" ${GHIDIS_ARGS} > "$work/headless.log" 2>&1 \
 	|| { grep -E "ERROR|Exception" "$work/headless.log" | head; exit 1; }
 grep -E "ERROR|Exception" "$work/headless.log" | head -5 || true
 cp "$work/headless.log" "${GHIDIS_LOG:-/dev/null}" 2>/dev/null; rm -rf "$work"

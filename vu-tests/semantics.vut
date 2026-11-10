@@ -1,0 +1,376 @@
+# VU semantic tests for EmuVU.java. Each `asm` line is one instruction as "UPPER<TAB>LOWER", in
+# dvp-as syntax; mktests.py assembles them with dvp-as. Expected values follow the VU manual.
+# Floats are written as decimals; integers and raw words in hex.
+
+test add_all_lanes
+asm	ADD.xyzw VF01, VF02, VF03	NOP
+set vf02_x 1.0
+set vf02_y 2.0
+set vf02_z 3.0
+set vf02_w 4.0
+set vf03_x 10.0
+set vf03_y 20.0
+set vf03_z 30.0
+set vf03_w 40.0
+expect vf01_x 11.0
+expect vf01_y 22.0
+expect vf01_z 33.0
+expect vf01_w 44.0
+run
+
+test dest_mask_keeps_other_lanes
+asm	ADD.xz VF01, VF02, VF03	NOP
+set vf01_x 9.0
+set vf01_y 9.0
+set vf01_z 9.0
+set vf01_w 9.0
+set vf02_x 1.0
+set vf02_z 3.0
+set vf03_x 1.0
+set vf03_z 1.0
+expect vf01_x 2.0
+expect vf01_y 9.0
+expect vf01_z 4.0
+expect vf01_w 9.0
+run
+
+test broadcast_field
+asm	MULw.xyz VF04, VF05, VF06w	NOP
+set vf05_x 1.0
+set vf05_y 2.0
+set vf05_z 3.0
+set vf06_w 2.0
+expect vf04_x 2.0
+expect vf04_y 4.0
+expect vf04_z 6.0
+run
+
+test vf00_reads_0001
+asm	ADD.xyzw VF01, VF00, VF00	NOP
+expect vf01_x 0.0
+expect vf01_y 0.0
+expect vf01_z 0.0
+expect vf01_w 2.0
+run
+
+test vf00_write_is_discarded
+asm	ADD.xyzw VF00, VF02, VF02	NOP
+asm	ADD.xyzw VF01, VF00, VF00	NOP
+set vf02_x 5.0
+set vf02_w 5.0
+expect vf01_x 0.0
+expect vf01_w 2.0
+run
+
+test madd_and_acc
+asm	MULA.xyzw ACC, VF02, VF03	NOP
+asm	MADD.xyzw VF01, VF02, VF03	NOP
+set vf02_x 2.0
+set vf03_x 3.0
+expect acc_x 6.0
+expect vf01_x 12.0
+run
+
+test msubi_uses_i
+asm	MSUBi.x VF01, VF02, I	NOP
+set acc_x 10.0
+set vf02_x 2.0
+set i 3.0
+expect vf01_x 4.0
+run
+
+test max_and_mini
+asm	MAX.xy VF01, VF02, VF03	NOP
+asm	MINI.xy VF04, VF02, VF03	NOP
+set vf02_x 1.0
+set vf02_y 5.0
+set vf03_x 3.0
+set vf03_y 2.0
+expect vf01_x 3.0
+expect vf01_y 5.0
+expect vf04_x 1.0
+expect vf04_y 2.0
+run
+
+test opmula_opmsub_cross_product
+asm	OPMULA.xyz ACC, VF02, VF03	NOP
+asm	OPMSUB.xyz VF01, VF03, VF02	NOP
+set vf02_x 1.0
+set vf02_y 0.0
+set vf02_z 0.0
+set vf03_x 0.0
+set vf03_y 1.0
+set vf03_z 0.0
+# x-hat cross y-hat is z-hat.
+expect vf01_x 0.0
+expect vf01_y 0.0
+expect vf01_z 1.0
+run
+
+test ftoi_itof
+asm	FTOI4.x VF01, VF02	NOP
+asm	ITOF12.x VF03, VF04	NOP
+set vf02_x 2.5
+set vf04_x 0x2000
+expect vf01_x 0x28
+expect vf03_x 2.0
+run
+
+test abs
+asm	ABS.xy VF01, VF02	NOP
+set vf02_x -1.5
+set vf02_y 2.0
+expect vf01_x 1.5
+expect vf01_y 2.0
+run
+
+test both_halves_read_old_state
+# The lower half loads VF01 from memory while the upper half reads VF01: it must see the old value.
+asm	ADD.x VF02, VF01, VF01	LQ.x VF01, 0(VI00)
+set vf01_x 1.0
+mem 0x0 100.0
+expect vf02_x 2.0
+expect vf01_x 100.0
+run
+
+test upper_wins_same_register
+asm	ADD.x VF01, VF02, VF02	MOVE.x VF01, VF03
+set vf02_x 1.0
+set vf03_x 7.0
+expect vf01_x 2.0
+run
+
+test q_snapshot
+# DIV writes Q; an upper instruction in the same pair reads the old Q.
+asm	MULq.x VF01, VF02, Q	DIV Q, VF03x, VF04x
+set q 2.0
+set vf02_x 3.0
+set vf03_x 8.0
+set vf04_x 2.0
+expect vf01_x 6.0
+expect q 4.0
+run
+
+test loi_after_upper
+asm	ADDi.x VF01, VF02, I	LOI 5.0
+set i 1.0
+set vf02_x 1.0
+expect vf01_x 2.0
+expect i 5.0
+run
+
+test lq_sq_offsets
+asm	NOP	IADDIU VI01, VI00, 2
+asm	NOP	LQ.xyzw VF01, 1(VI01)
+asm	NOP	SQ.yw VF01, 0(VI00)
+mem 0x30 1.0
+mem 0x34 2.0
+mem 0x38 3.0
+mem 0x3c 4.0
+expect vf01_x 1.0
+expect vf01_w 4.0
+expectmem 0x4 2.0
+expectmem 0xc 4.0
+expectmem 0x0 0x0
+run
+
+test lqi_sqd
+asm	NOP	IADDIU VI02, VI00, 1
+asm	NOP	LQI.x VF01, (VI02++)
+asm	NOP	IADDIU VI03, VI00, 4
+asm	NOP	SQD.x VF01, (--VI03)
+mem 0x10 9.0
+expect vi02 0x2
+expect vi03 0x3
+expectmem 0x30 9.0
+run
+
+test ilw_isw
+asm	NOP	IADDIU VI01, VI00, 0x1234
+asm	NOP	ISW.y VI01, 2(VI00)
+asm	NOP	ILW.y VI02, 2(VI00)
+expect vi02 0x1234
+expectmem 0x24 0x1234
+run
+
+test vi00_is_zero
+asm	NOP	IADDIU VI00, VI00, 5
+asm	NOP	IADD VI01, VI00, VI00
+expect vi01 0x0
+run
+
+test integer_ops
+asm	NOP	IADDIU VI01, VI00, 6
+asm	NOP	IADDI VI02, VI01, -2
+asm	NOP	ISUB VI03, VI01, VI02
+asm	NOP	IAND VI04, VI01, VI02
+asm	NOP	IOR VI05, VI01, VI02
+asm	NOP	ISUBIU VI06, VI01, 1
+expect vi02 0x4
+expect vi03 0x2
+expect vi04 0x4
+expect vi05 0x6
+expect vi06 0x5
+run
+
+test mtir_mfir
+asm	NOP	MTIR VI01, VF02y
+asm	NOP	MFIR.xw VF03, VI01
+set vf02_y 0x0001fff0
+expect vi01 0xfff0
+expect vf03_x 0xfffffff0
+expect vf03_w 0xfffffff0
+run
+
+test mr32_rotates
+asm	NOP	MR32.xyzw VF01, VF02
+set vf02_x 1.0
+set vf02_y 2.0
+set vf02_z 3.0
+set vf02_w 4.0
+expect vf01_x 2.0
+expect vf01_y 3.0
+expect vf01_z 4.0
+expect vf01_w 1.0
+run
+
+test sqrt_rsqrt
+asm	NOP	SQRT Q, VF02x
+asm	NOP	RSQRT Q, VF03x, VF02x
+set vf02_x 16.0
+set vf03_x 8.0
+expect q 2.0
+run
+
+test ibeq_taken
+asm	NOP	IBEQ VI00, VI00, skip
+asm	NOP	NOP
+asm	NOP	IADDIU VI02, VI00, 1
+skip:
+asm	NOP	IADDIU VI03, VI00, 7
+expect vi02 0x0
+expect vi03 0x7
+run
+
+test ibne_not_taken
+asm	NOP	IBNE VI00, VI00, skip
+asm	NOP	NOP
+asm	NOP	IADDIU VI02, VI00, 1
+skip:
+asm	NOP	IADDIU VI03, VI00, 7
+expect vi02 0x1
+expect vi03 0x7
+run
+
+test ibltz_ibgez_signed
+asm	NOP	ISUBIU VI01, VI00, 1
+asm	NOP	IBLTZ VI01, skip
+asm	NOP	NOP
+asm	NOP	IADDIU VI02, VI00, 1
+skip:
+asm	NOP	IBGEZ VI01, skip2
+asm	NOP	NOP
+asm	NOP	IADDIU VI03, VI00, 1
+skip2:
+expect vi02 0x0
+expect vi03 0x1
+run
+
+test ibgtz_iblez
+asm	NOP	IADDIU VI01, VI00, 3
+asm	NOP	IBLEZ VI01, skip
+asm	NOP	NOP
+asm	NOP	IADDIU VI02, VI00, 1
+skip:
+asm	NOP	IBGTZ VI01, skip2
+asm	NOP	NOP
+asm	NOP	IADDIU VI03, VI00, 1
+skip2:
+expect vi02 0x1
+expect vi03 0x0
+run
+
+test delay_slot_runs
+asm	NOP	B skip
+asm	NOP	IADDIU VI04, VI00, 9
+asm	NOP	IADDIU VI05, VI00, 1
+skip:
+expect vi04 0x9
+expect vi05 0x0
+run
+
+test upper_runs_with_branch
+asm	ADD.x VF01, VF02, VF02	B skip
+asm	NOP	NOP
+asm	NOP	NOP
+skip:
+set vf02_x 1.5
+expect vf01_x 3.0
+run
+
+test bal_links
+asm	NOP	BAL VI15, sub
+asm	NOP	NOP
+asm	NOP	NOP
+sub:
+asm	NOP	NOP
+expect vi15 0x2
+run
+
+test e_bit_ends_after_next
+asm	NOP[E]	NOP
+asm	NOP	IADDIU VI01, VI00, 1
+asm	NOP	IADDIU VI02, VI00, 1
+expect vi01 0x1
+expect vi02 0x0
+run
+
+test fcset_fcand_fcget
+asm	NOP	FCSET 0x123456
+asm	NOP	FCAND VI01, 0x000400
+asm	NOP	FCGET VI02
+expect clip 0x123456
+expect vi01 0x1
+expect vi02 0x456
+run
+
+test clipw
+asm	CLIPw.xyz VF01xyz, VF02w	NOP
+set clip 0x1
+set vf01_x 3.0
+set vf01_y -3.0
+set vf01_z 0.5
+set vf02_w -2.0
+expect clip 0x49
+run
+
+test fsset_fsand
+asm	NOP	FSSET 0xfc0
+asm	NOP	FSAND VI01, 0x0c0
+set status 0x3f
+expect status 0xfff
+expect vi01 0xc0
+run
+
+test esum_eleng
+asm	NOP	ESUM P, VF02
+asm	NOP	MFP.x VF03, P
+asm	NOP	ELENG P, VF04
+asm	NOP	MFP.y VF03, P
+set vf02_x 1.0
+set vf02_y 2.0
+set vf02_z 3.0
+set vf02_w 4.0
+set vf04_x 3.0
+set vf04_y 4.0
+set vf04_z 0.0
+expect vf03_x 10.0
+expect vf03_y 5.0
+run
+
+test rinit_rget
+asm	NOP	RINIT R, VF02x
+asm	NOP	RGET.x VF03, R
+set vf02_x 0x00412345
+expect vf03_x 0x3fc12345
+run

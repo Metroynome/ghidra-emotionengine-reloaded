@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- VU micro mode. The VU has no stack; vu_sp exists only because the decompiler requires one.
+     Microprograms take and return everything in VF/VI registers, so the default prototype is empty
+     and the decompiler infers the registers actually used. -->
 <compiler_spec>
 	<data_organization>
 		<pointer_size value="4"/>
+		<float_size value="4"/>
+		<integer_size value="4"/>
+		<short_size value="2"/>
 	</data_organization>
-	<stackpointer register="pc" space="ram"/>
+	<global>
+		<range space="ram"/>
+		<range space="vumem"/>
+	</global>
+	<stackpointer register="vu_sp" space="ram"/>
 	<default_proto>
 		<prototype name="__vu" extrapop="0" stackshift="0">
 			<input/>

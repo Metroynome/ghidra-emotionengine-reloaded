@@ -20,15 +20,24 @@ public class DumpVU extends GhidraScript {
 			for (MemoryBlock block : currentProgram.getMemory().getBlocks()) {
 				Address start = block.getStart();
 				long size = block.getSize();
+				// Linear, not flow-following, so every slot is decoded, including delay slots.
+				DisassembleCommand cmd = new DisassembleCommand(start, new AddressSet(start, block.getEnd()), false);
+				cmd.applyTo(currentProgram, monitor);
 				for (long off = 0; off + 8 <= size; off += 8) {
 					Address a = start.add(off);
+					// Disassembly stops after an instruction with no fall-through (jr, b, an E-slot
+					// end), so restart at each gap and run on, keeping any delay slot in range.
 					if (getInstructionAt(a) == null) {
-						DisassembleCommand cmd = new DisassembleCommand(a, new AddressSet(a, a.add(7)), false);
+						cmd = new DisassembleCommand(a, new AddressSet(a, block.getEnd()), false);
 						cmd.applyTo(currentProgram, monitor);
 					}
 					Instruction insn = getInstructionAt(a);
 					byte[] b = getBytes(a, 8);
 					String text = insn == null ? "*unknown*" : insn.toString();
+					// Ghidra marks an instruction in a delay slot with a leading underscore.
+					if (insn != null && insn.isInDelaySlot() && text.startsWith("_")) {
+						text = text.substring(1);
+					}
 					w.printf("%04x\t%s %s\t%s%n", off, word(b, 0), word(b, 4), text);
 				}
 			}

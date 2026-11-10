@@ -5,3 +5,7 @@ corpus_*/
 *_gh.txt
 *.log
 f.txt
+semantics_built.txt
+*_out.txt
+*_check.txt
+*.vsm
