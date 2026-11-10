@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<compiler_spec>
+	<data_organization>
+		<pointer_size value="4"/>
+	</data_organization>
+	<stackpointer register="pc" space="ram"/>
+	<default_proto>
+		<prototype name="__vu" extrapop="0" stackshift="0">
+			<input/>
+			<output/>
+		</prototype>
+	</default_proto>
+</compiler_spec>

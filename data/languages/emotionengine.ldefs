@@ -15,4 +15,15 @@
     <external_name tool="IDA-PRO" name="r5900l"/>
     <external_name tool="DWARF.register.mapping.file" name="r5900.dwarf"/>
   </language>
+  <language processor="PS2-VU"
+            endian="little"
+            size="32"
+            variant="VU1"
+            version="1.0"
+            slafile="vu.sla"
+            processorspec="vu.pspec"
+            id="VU:LE:32:VU1">
+    <description>Emotion Engine (PlayStation 2) Vector Unit 1, micro mode</description>
+    <compiler name="default" spec="vu.cspec" id="default"/>
+  </language>
 </language_definitions>

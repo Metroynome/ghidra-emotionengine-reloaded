@@ -1,0 +1,7 @@
+# Generated corpora and outputs. Game-derived microcode must never be committed.
+corpus_*/
+*.bin
+*_ref.txt
+*_gh.txt
+*.log
+f.txt
