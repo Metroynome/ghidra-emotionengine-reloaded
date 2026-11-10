@@ -69,7 +69,8 @@ eclipse.classpath.file.whenMerged {
 }
 
 tasks.named('buildExtension', Zip) {
-	from('**/stdump') {
-		useFileSystemPermissions()
+	// A glob in from() is a path on Windows, so mark the executable by pattern instead.
+	filesMatching('**/stdump') {
+		permissions { unix('rwxr-xr-x') }
 	}
 }
