@@ -6,10 +6,11 @@
 // places or for separate programs. Without a .vutext section, range: or section:, it looks for the
 // microcode's DMA chains itself, as the analyzer does (for example in a raw EE memory dump).
 //
-// Script arguments, all optional, in any order (key:value or key=value). Run from the Script
-// Manager without arguments, the script asks for them.
+// Run from the Script Manager, the script shows a dialog with these choices. Headless, they are
+// script arguments, all optional, in any order (key:value or key=value):
 //   auto | VU0 | VU1   which unit the uploads run on (default auto; VU0 or VU1 puts all on one)
 //   separate           make a program per unit (name_vu0, name_vu1) instead of overlays in this one
+//   both               do both: overlays in this program, and the separate programs
 //   replace            first remove the VU overlays (and EE references to them) an earlier import made
 //   section:NAME       read microcode from this EE section instead of .vutext
 //   range:START-END    read microcode from these EE addresses (hex, END exclusive)
@@ -43,11 +44,10 @@ public class ImportVuMicrocode extends GhidraScript {
 		String mode = "AUTO", section = null, show = null;
 		Address rangeStart = null, rangeEnd = null;
 		Long raw = null;
-		boolean verify = false, eeEntries = true, separate = false, replace = false;
+		boolean verify = false, eeEntries = true, separate = false, both = false, replace = false;
 		String[] args = getScriptArgs();
 		if (args.length == 0 && !isRunningHeadless()) {
-			args = askString("Import VU microcode", "Options: auto | VU0 | VU1, separate, replace, section:NAME, " +
-				"range:START-END, raw:VUADDR, noentries, verify", "auto").trim().split("\\s+");
+			args = askOptions();
 		}
 		for (String arg : args) {
 			// key:value and key=value are the same; Windows batch files split arguments at '='.
@@ -67,6 +67,9 @@ public class ImportVuMicrocode extends GhidraScript {
 			}
 			else if (lower.equals("separate")) {
 				separate = true;
+			}
+			else if (lower.equals("both")) {
+				both = true;
 			}
 			else if (lower.equals("replace")) {
 				replace = true;
@@ -90,11 +93,13 @@ public class ImportVuMicrocode extends GhidraScript {
 			}
 		}
 		boolean inPlace = !separate && VuMicrocodeImporter.supportsInPlace(currentProgram);
+		boolean alsoSeparate = both && inPlace;
 		if (inPlace && replace) {
 			println(String.format("Removed %d VU overlays", VuMicrocodeImporter.removeVuOverlays(currentProgram, monitor)));
 		}
 		if (inPlace && VuMicrocodeImporter.hasVuOverlays(currentProgram)) {
-			printerr("This program already has VU overlays (vu0_*, vu1_*). Use replace to import again, or separate.");
+			printerr("This program already has VU code from an earlier import (vu0_* and vu1_* blocks). Run again " +
+				"with \"Replace VU code from an earlier import\" ticked, or choose separate programs.");
 			return;
 		}
 
@@ -125,8 +130,127 @@ public class ImportVuMicrocode extends GhidraScript {
 				}
 			}
 		}
+		summary.setLength(0);
 		for (long[] region : regions) {
+			if (alsoSeparate) {
+				importRegion(toAddr(region[0]), region[1], mode, raw, eeEntries, false, verify, show);
+			}
 			importRegion(toAddr(region[0]), region[1], mode, raw, eeEntries, inPlace, verify, show);
+		}
+		if (!isRunningHeadless() && summary.length() > 0) {
+			popup("VU microcode imported.\n\n" + summary + (inPlace ? "\nIn this program the VU code is in the " +
+				"vu0_* and vu1_* blocks (Window > Memory Map). The Console has the details." : ""));
+		}
+	}
+
+	/** What the run made, for the popup at the end. */
+	private final StringBuilder summary = new StringBuilder();
+
+	/** Asks for the options in one dialog, and returns them as script arguments. */
+	private String[] askOptions() throws Exception {
+		final String where = "Put the VU code";
+		final String inside = "Inside this program (recommended)";
+		final String apart = "In separate VU0 and VU1 programs";
+		final String bothWays = "Both: inside this program and in separate programs";
+		final String unit = "Which VU it runs on";
+		final String unitAuto = "Work it out from the EE code (recommended)";
+		final String unitVu1 = "All on VU1";
+		final String unitVu0 = "All on VU0 (only microcode that fits in 4 KB)";
+		final String source = "Where the microcode is";
+		final String sourceAuto = "Find it (.vutext, or search a memory dump)";
+		final String sourceSection = "In a section named below";
+		final String sourceRange = "In the address range below";
+		final String sourceRaw = "Bare microcode (no VIF packets) in the range below";
+		final String sectionName = "Section name";
+		final String rangeStart = "Range start (EE address, hex)";
+		final String rangeEnd = "Range end (EE address, hex, not included)";
+		final String rawAddress = "Bare microcode's VU address (hex)";
+		final String replaceIt = "Replace VU code from an earlier import";
+		final String entries = "Link the EE code that starts each VU program";
+		final String check = "Decompile every VU function and print a check (slow)";
+
+		boolean inPlaceOk = VuMicrocodeImporter.supportsInPlace(currentProgram);
+		boolean earlier = VuMicrocodeImporter.hasVuOverlays(currentProgram);
+		ghidra.features.base.values.GhidraValuesMap values = new ghidra.features.base.values.GhidraValuesMap();
+		if (inPlaceOk) {
+			values.defineChoice(where, inside, inside, apart, bothWays);
+		}
+		else {
+			values.defineChoice(where, apart, apart);
+		}
+		values.defineChoice(unit, unitAuto, unitAuto, unitVu1, unitVu0);
+		values.defineChoice(source, sourceAuto, sourceAuto, sourceSection, sourceRange, sourceRaw);
+		values.defineString(sectionName, ".vutext");
+		values.defineString(rangeStart, "");
+		values.defineString(rangeEnd, "");
+		values.defineString(rawAddress, "0");
+		values.defineBoolean(replaceIt, earlier);
+		values.defineBoolean(entries, true);
+		values.defineBoolean(check, false);
+		values.setValidator((map, status) -> {
+			String src = map.getChoice(source);
+			if (src.equals(sourceSection) && map.getString(sectionName).isBlank()) {
+				status.setStatusText("Enter the section name.");
+				return false;
+			}
+			if ((src.equals(sourceRange) || src.equals(sourceRaw))
+				&& (!isHex(map.getString(rangeStart)) || !isHex(map.getString(rangeEnd)))) {
+				status.setStatusText("Enter the range start and end as hex addresses, for example 100080 and 11a160.");
+				return false;
+			}
+			if (src.equals(sourceRaw) && !isHex(map.getString(rawAddress))) {
+				status.setStatusText("Enter the VU address of the bare microcode in hex, usually 0.");
+				return false;
+			}
+			if (!map.getChoice(where).equals(apart) && !map.getBoolean(replaceIt) && earlier) {
+				status.setStatusText("This program already has VU code: tick \"" + replaceIt + "\" to import it again.");
+				return false;
+			}
+			return true;
+		});
+		String message = "<html>Decodes the PlayStation 2 Vector Unit (VU0/VU1) microcode stored in this program.<br><br>" +
+			"<b>Inside this program</b> adds each VU program as a block (vu0_* or vu1_*) at its VU address,<br>" +
+			"with functions and links from the EE code that starts it. <b>Separate programs</b> are saved<br>" +
+			"next to this one, named " + currentProgram.getName() + "_vu0 and _vu1, to view the VU code on its own.<br><br>" +
+			"The defaults suit a game ELF or an EE memory dump." +
+			(earlier ? "<br><br>This program already has VU code from an earlier import." : "") +
+			(!inPlaceOk ? "<br><br>This program's language cannot hold VU code, so only separate programs can be made." : "");
+		askValues("Import VU microcode", message, values);
+
+		List<String> out = new ArrayList<>();
+		String w = values.getChoice(where);
+		out.add(w.equals(apart) ? "separate" : w.equals(bothWays) ? "both" : "");
+		String u = values.getChoice(unit);
+		out.add(u.equals(unitVu1) ? "VU1" : u.equals(unitVu0) ? "VU0" : "auto");
+		String src = values.getChoice(source);
+		if (src.equals(sourceSection)) {
+			out.add("section:" + values.getString(sectionName).trim());
+		}
+		else if (src.equals(sourceRange) || src.equals(sourceRaw)) {
+			out.add("range:" + values.getString(rangeStart).trim() + "-" + values.getString(rangeEnd).trim());
+			if (src.equals(sourceRaw)) {
+				out.add("raw:" + values.getString(rawAddress).trim());
+			}
+		}
+		if (values.getBoolean(replaceIt)) {
+			out.add("replace");
+		}
+		if (!values.getBoolean(entries)) {
+			out.add("noentries");
+		}
+		if (values.getBoolean(check)) {
+			out.add("verify");
+		}
+		return out.toArray(new String[0]);
+	}
+
+	private static boolean isHex(String s) {
+		try {
+			Long.decode(hex(s.trim()));
+			return !s.isBlank();
+		}
+		catch (NumberFormatException e) {
+			return false;
 		}
 	}
 
@@ -154,6 +278,10 @@ public class ImportVuMicrocode extends GhidraScript {
 			if (importer.assumedUploads() > 0) {
 				println(String.format("%d uploads that no EE code here sends: VU1 assumed (noted in their comments)",
 					importer.assumedUploads()));
+				if (inPlace) {
+					summary.append(String.format("%d uploads are not sent by any EE code here, so VU1 was assumed; " +
+						"their comments say so.%n", importer.assumedUploads()));
+				}
 			}
 			for (long chain : importer.vu0Chains()) {
 				println(String.format("VU0 chain %08x-%08x", chain, importer.chainEnd(chain)));
@@ -166,6 +294,8 @@ public class ImportVuMicrocode extends GhidraScript {
 				eeEntries && raw == null, this);
 			println(String.format("%s: %d microprograms %s", unit, r.programs.size(),
 				inPlace ? "in this program" : "in " + name));
+			summary.append(String.format("%s: %d microprograms, %d functions %s%n", unit, r.programs.size(),
+				r.functions.size(), inPlace ? "in this program" : "in the separate program"));
 			println(String.format("%s: resident uploads added: %d; flows left outside the program: %d", unit,
 				r.resident, r.unresolved));
 			if (eeEntries && raw == null) {
@@ -225,6 +355,7 @@ public class ImportVuMicrocode extends GhidraScript {
 		}
 		DomainFile saved = folder.createFile(fileName, vu, monitor);
 		println("Saved " + saved.getPathname() + " to the project.");
+		summary.append("    saved as " + saved.getPathname() + "\n");
 	}
 
 	private static String hex(String s) {
