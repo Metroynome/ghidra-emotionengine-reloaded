@@ -28,7 +28,6 @@ import ghidra.pcode.pcoderaw.PcodeOpRaw;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSpace;
 import ghidra.program.model.lang.Register;
-import ghidra.program.model.listing.Instruction;
 
 public class EmuVU extends GhidraScript {
 
@@ -204,19 +203,8 @@ public class EmuVU extends GhidraScript {
 							.getDisassemblyContext(pc);
 					emu.setContextRegister(ctx);
 				}
-				if (System.getenv("EMU_TRACE") != null && name.equals(System.getenv("EMU_TRACE"))) {
-					Instruction ti = getInstructionAt(pc);
-					out.printf("TRACE %s %s ctx=%s%n", pc, ti, emu.getContextRegister());
-				}
 				if (!emu.step(monitor)) {
-					if (System.getenv("EMU_TRACE") != null) {
-						out.printf("STEP FAILED at %s: %s%n", emu.getExecutionAddress(), emu.getLastError());
-					}
 					break;
-				}
-				if (System.getenv("EMU_TRACE") != null && name.equals(System.getenv("EMU_TRACE"))) {
-					out.printf("AFTER pc=%s vi03=%s vi02=%s%n", emu.getExecutionAddress(),
-						emu.readRegister(reg("vi03")), emu.readRegister(reg("vi02")));
 				}
 			}
 			List<String> problems = new ArrayList<>();

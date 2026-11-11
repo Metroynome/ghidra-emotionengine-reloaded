@@ -49,6 +49,11 @@ define token vu0_instr(64)
 	vu0_l_imm24 = (0,23) dec
 	vu0_l_b24 = (24,24)
 	vu0_l_hi3 = (22,24)
+	# The flags and dest masks again, as named fields for display (see the Display section).
+	vu0_u_flagsn = (59,63)
+	vu0_u_destn = (53,56)
+	vu0_l_destn = (21,24)
+	vu0_l_destn2 = (21,24)
 	vu0_l_lo6 = (0,5)
 	# Upper instruction (second word).
 	vu0_u_word = (32,63)
@@ -102,86 +107,8 @@ attach variables [ vu0_l_fty vu0_l_fsy vu0_u_fty vu0_u_fsy vu0_u_fdy ] [ vf0y vf
 attach variables [ vu0_l_ftz vu0_l_fsz vu0_u_ftz vu0_u_fsz vu0_u_fdz ] [ vf0z vf1z vf2z vf3z vf4z vf5z vf6z vf7z vf8z vf9z vf10z vf11z vf12z vf13z vf14z vf15z vf16z vf17z vf18z vf19z vf20z vf21z vf22z vf23z vf24z vf25z vf26z vf27z vf28z vf29z vf30z vf31z ];
 attach variables [ vu0_l_ftw vu0_l_fsw vu0_u_ftw vu0_u_fsw vu0_u_fdw ] [ vf0w vf1w vf2w vf3w vf4w vf5w vf6w vf7w vf8w vf9w vf10w vf11w vf12w vf13w vf14w vf15w vf16w vf17w vf18w vf19w vf20w vf21w vf22w vf23w vf24w vf25w vf26w vf27w vf28w vf29w vf30w vf31w ];
 
-VU0_UD: "" is vu0_u_dest=0 { }
-VU0_UD: "w" is vu0_u_dest=1 { }
-VU0_UD: "z" is vu0_u_dest=2 { }
-VU0_UD: "zw" is vu0_u_dest=3 { }
-VU0_UD: "y" is vu0_u_dest=4 { }
-VU0_UD: "yw" is vu0_u_dest=5 { }
-VU0_UD: "yz" is vu0_u_dest=6 { }
-VU0_UD: "yzw" is vu0_u_dest=7 { }
-VU0_UD: "x" is vu0_u_dest=8 { }
-VU0_UD: "xw" is vu0_u_dest=9 { }
-VU0_UD: "xz" is vu0_u_dest=10 { }
-VU0_UD: "xzw" is vu0_u_dest=11 { }
-VU0_UD: "xy" is vu0_u_dest=12 { }
-VU0_UD: "xyw" is vu0_u_dest=13 { }
-VU0_UD: "xyz" is vu0_u_dest=14 { }
-VU0_UD: "xyzw" is vu0_u_dest=15 { }
-VU0_LD: "" is vu0_l_dest=0 { }
-VU0_LD: "w" is vu0_l_dest=1 { }
-VU0_LD: "z" is vu0_l_dest=2 { }
-VU0_LD: "zw" is vu0_l_dest=3 { }
-VU0_LD: "y" is vu0_l_dest=4 { }
-VU0_LD: "yw" is vu0_l_dest=5 { }
-VU0_LD: "yz" is vu0_l_dest=6 { }
-VU0_LD: "yzw" is vu0_l_dest=7 { }
-VU0_LD: "x" is vu0_l_dest=8 { }
-VU0_LD: "xw" is vu0_l_dest=9 { }
-VU0_LD: "xz" is vu0_l_dest=10 { }
-VU0_LD: "xzw" is vu0_l_dest=11 { }
-VU0_LD: "xy" is vu0_l_dest=12 { }
-VU0_LD: "xyw" is vu0_l_dest=13 { }
-VU0_LD: "xyz" is vu0_l_dest=14 { }
-VU0_LD: "xyzw" is vu0_l_dest=15 { }
-VU0_LD2: "" is vu0_l_dest=0 { }
-VU0_LD2: "w" is vu0_l_dest=1 { }
-VU0_LD2: "z" is vu0_l_dest=2 { }
-VU0_LD2: "zw" is vu0_l_dest=3 { }
-VU0_LD2: "y" is vu0_l_dest=4 { }
-VU0_LD2: "yw" is vu0_l_dest=5 { }
-VU0_LD2: "yz" is vu0_l_dest=6 { }
-VU0_LD2: "yzw" is vu0_l_dest=7 { }
-VU0_LD2: "x" is vu0_l_dest=8 { }
-VU0_LD2: "xw" is vu0_l_dest=9 { }
-VU0_LD2: "xz" is vu0_l_dest=10 { }
-VU0_LD2: "xzw" is vu0_l_dest=11 { }
-VU0_LD2: "xy" is vu0_l_dest=12 { }
-VU0_LD2: "xyw" is vu0_l_dest=13 { }
-VU0_LD2: "xyz" is vu0_l_dest=14 { }
-VU0_LD2: "xyzw" is vu0_l_dest=15 { }
-VU0_UF: "" is vu0_u_flags=0 { }
-VU0_UF: "[t]" is vu0_u_flags=1 { }
-VU0_UF: "[d]" is vu0_u_flags=2 { }
-VU0_UF: "[dt]" is vu0_u_flags=3 { }
-VU0_UF: "[m]" is vu0_u_flags=4 { }
-VU0_UF: "[mt]" is vu0_u_flags=5 { }
-VU0_UF: "[md]" is vu0_u_flags=6 { }
-VU0_UF: "[mdt]" is vu0_u_flags=7 { }
-VU0_UF: "[e]" is vu0_u_flags=8 { }
-VU0_UF: "[et]" is vu0_u_flags=9 { }
-VU0_UF: "[ed]" is vu0_u_flags=10 { }
-VU0_UF: "[edt]" is vu0_u_flags=11 { }
-VU0_UF: "[em]" is vu0_u_flags=12 { }
-VU0_UF: "[emt]" is vu0_u_flags=13 { }
-VU0_UF: "[emd]" is vu0_u_flags=14 { }
-VU0_UF: "[emdt]" is vu0_u_flags=15 { }
-VU0_UF: "[i]" is vu0_u_flags=16 { }
-VU0_UF: "[it]" is vu0_u_flags=17 { }
-VU0_UF: "[id]" is vu0_u_flags=18 { }
-VU0_UF: "[idt]" is vu0_u_flags=19 { }
-VU0_UF: "[im]" is vu0_u_flags=20 { }
-VU0_UF: "[imt]" is vu0_u_flags=21 { }
-VU0_UF: "[imd]" is vu0_u_flags=22 { }
-VU0_UF: "[imdt]" is vu0_u_flags=23 { }
-VU0_UF: "[ie]" is vu0_u_flags=24 { }
-VU0_UF: "[iet]" is vu0_u_flags=25 { }
-VU0_UF: "[ied]" is vu0_u_flags=26 { }
-VU0_UF: "[iedt]" is vu0_u_flags=27 { }
-VU0_UF: "[iem]" is vu0_u_flags=28 { }
-VU0_UF: "[iemt]" is vu0_u_flags=29 { }
-VU0_UF: "[iemd]" is vu0_u_flags=30 { }
-VU0_UF: "[iemdt]" is vu0_u_flags=31 { }
+attach names [ vu0_u_flagsn ] [ "" "[t]" "[d]" "[dt]" "[m]" "[mt]" "[md]" "[mdt]" "[e]" "[et]" "[ed]" "[edt]" "[em]" "[emt]" "[emd]" "[emdt]" "[i]" "[it]" "[id]" "[idt]" "[im]" "[imt]" "[imd]" "[imdt]" "[ie]" "[iet]" "[ied]" "[iedt]" "[iem]" "[iemt]" "[iemd]" "[iemdt]" ];
+attach names [ vu0_u_destn vu0_l_destn vu0_l_destn2 ] [ "" "w" "z" "zw" "y" "yw" "yz" "yzw" "x" "xw" "xz" "xzw" "xy" "xyw" "xyz" "xyzw" ];
 VU0_UBC: "x" is vu0_u_bc=0 { }
 VU0_UBC: "y" is vu0_u_bc=1 { }
 VU0_UBC: "z" is vu0_u_bc=2 { }
@@ -293,13 +220,13 @@ VU0_USNAP: is VU0_RUFSX & VU0_RUFTX & VU0_RUFSY & VU0_RUFTY & VU0_RUFSZ & VU0_RU
 }
 
 # Display operands.
-VU0_UFD: vu0_u_fd^VU0_UD is vu0_u_fd & VU0_UD { }
-VU0_UFS: vu0_u_fs^VU0_UD is vu0_u_fs & VU0_UD { }
-VU0_UFT: vu0_u_ft^VU0_UD is vu0_u_ft & VU0_UD { }
-VU0_UACC: "acc"^VU0_UD is VU0_UD { }
+VU0_UFD: vu0_u_fd^vu0_u_destn is vu0_u_fd & vu0_u_destn { }
+VU0_UFS: vu0_u_fs^vu0_u_destn is vu0_u_fs & vu0_u_destn { }
+VU0_UFT: vu0_u_ft^vu0_u_destn is vu0_u_ft & vu0_u_destn { }
+VU0_UACC: "acc"^vu0_u_destn is vu0_u_destn { }
 VU0_UBCR: vu0_u_ft^VU0_UBC is vu0_u_ft & VU0_UBC { }
-VU0_LFT: vu0_l_ft^VU0_LD is vu0_l_ft & VU0_LD { }
-VU0_LFS: vu0_l_fs^VU0_LD is vu0_l_fs & VU0_LD { }
+VU0_LFT: vu0_l_ft^vu0_l_destn is vu0_l_ft & vu0_l_destn { }
+VU0_LFS: vu0_l_fs^vu0_l_destn is vu0_l_fs & vu0_l_destn { }
 VU0_IT: vu0_l_it is vu0_l_it { }
 VU0_IS: vu0_l_is is vu0_l_is { }
 VU0_ID: vu0_l_id is vu0_l_id { }
@@ -358,7 +285,7 @@ VU0_CSTW: is vu0_l_dw=0 { }
 VU0_CSTW: is vu0_l_dw=1 { *[ram]:4 (vu0_tr_ea + 12) = vu0_tr_w; }
 
 # Upper instructions. The vu0_u_res bits are always clear.
-VU0_UPPER: "add"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "add"^VU0_UBC^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vu0_us_x f+ VU0_UBCV;
 	local r_y:4 = vu0_us_y f+ VU0_UBCV;
 	local r_z:4 = vu0_us_z f+ VU0_UBCV;
@@ -388,7 +315,7 @@ VU0_UPPER: "add"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is v
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "sub"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=1 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "sub"^VU0_UBC^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=1 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vu0_us_x f- VU0_UBCV;
 	local r_y:4 = vu0_us_y f- VU0_UBCV;
 	local r_z:4 = vu0_us_z f- VU0_UBCV;
@@ -418,7 +345,7 @@ VU0_UPPER: "sub"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is v
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "madd"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=2 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "madd"^VU0_UBC^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=2 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vuACCx f+ (vu0_us_x f* VU0_UBCV);
 	local r_y:4 = vuACCy f+ (vu0_us_y f* VU0_UBCV);
 	local r_z:4 = vuACCz f+ (vu0_us_z f* VU0_UBCV);
@@ -448,7 +375,7 @@ VU0_UPPER: "madd"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is 
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "msub"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=3 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "msub"^VU0_UBC^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=3 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vuACCx f- (vu0_us_x f* VU0_UBCV);
 	local r_y:4 = vuACCy f- (vu0_us_y f* VU0_UBCV);
 	local r_z:4 = vuACCz f- (vu0_us_z f* VU0_UBCV);
@@ -478,7 +405,7 @@ VU0_UPPER: "msub"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is 
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "max"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=4 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UFD & VU0_UFS {
+VU0_UPPER: "max"^VU0_UBC^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=4 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UFD & VU0_UFS {
 	local m_x:4 = vu0_us_x;
 	if (!(VU0_UBCV f> vu0_us_x)) goto <m_x_keep>;
 	m_x = VU0_UBCV;
@@ -512,7 +439,7 @@ VU0_UPPER: "max"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is v
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "mini"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=5 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UFD & VU0_UFS {
+VU0_UPPER: "mini"^VU0_UBC^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=5 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UFD & VU0_UFS {
 	local m_x:4 = vu0_us_x;
 	if (!(VU0_UBCV f< vu0_us_x)) goto <m_x_keep>;
 	m_x = VU0_UBCV;
@@ -546,7 +473,7 @@ VU0_UPPER: "mini"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is 
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "mul"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=6 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "mul"^VU0_UBC^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UBCR is vu0_u_op4=6 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vu0_us_x f* VU0_UBCV;
 	local r_y:4 = vu0_us_y f* VU0_UBCV;
 	local r_z:4 = vu0_us_z f* VU0_UBCV;
@@ -576,7 +503,7 @@ VU0_UPPER: "mul"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UBCR is v
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "mulq"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x1c & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "mulq"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x1c & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vu0_us_x f* vu0_uq;
 	local r_y:4 = vu0_us_y f* vu0_uq;
 	local r_z:4 = vu0_us_z f* vu0_uq;
@@ -606,7 +533,7 @@ VU0_UPPER: "mulq"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x1c &
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "maxi"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x1d & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UFD & VU0_UFS {
+VU0_UPPER: "maxi"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x1d & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UFD & VU0_UFS {
 	local m_x:4 = vu0_us_x;
 	if (!(vu0_ui f> vu0_us_x)) goto <m_x_keep>;
 	m_x = vu0_ui;
@@ -640,7 +567,7 @@ VU0_UPPER: "maxi"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x1d &
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "muli"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x1e & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "muli"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x1e & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vu0_us_x f* vu0_ui;
 	local r_y:4 = vu0_us_y f* vu0_ui;
 	local r_z:4 = vu0_us_z f* vu0_ui;
@@ -670,7 +597,7 @@ VU0_UPPER: "muli"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x1e &
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "minii"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x1f & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UFD & VU0_UFS {
+VU0_UPPER: "minii"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x1f & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UFD & VU0_UFS {
 	local m_x:4 = vu0_us_x;
 	if (!(vu0_ui f< vu0_us_x)) goto <m_x_keep>;
 	m_x = vu0_ui;
@@ -704,7 +631,7 @@ VU0_UPPER: "minii"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x1f 
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "addq"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x20 & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "addq"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x20 & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vu0_us_x f+ vu0_uq;
 	local r_y:4 = vu0_us_y f+ vu0_uq;
 	local r_z:4 = vu0_us_z f+ vu0_uq;
@@ -734,7 +661,7 @@ VU0_UPPER: "addq"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x20 &
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "maddq"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x21 & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "maddq"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x21 & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vuACCx f+ (vu0_us_x f* vu0_uq);
 	local r_y:4 = vuACCy f+ (vu0_us_y f* vu0_uq);
 	local r_z:4 = vuACCz f+ (vu0_us_z f* vu0_uq);
@@ -764,7 +691,7 @@ VU0_UPPER: "maddq"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x21 
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "addi"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x22 & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "addi"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x22 & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vu0_us_x f+ vu0_ui;
 	local r_y:4 = vu0_us_y f+ vu0_ui;
 	local r_z:4 = vu0_us_z f+ vu0_ui;
@@ -794,7 +721,7 @@ VU0_UPPER: "addi"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x22 &
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "maddi"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x23 & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "maddi"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x23 & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vuACCx f+ (vu0_us_x f* vu0_ui);
 	local r_y:4 = vuACCy f+ (vu0_us_y f* vu0_ui);
 	local r_z:4 = vuACCz f+ (vu0_us_z f* vu0_ui);
@@ -824,7 +751,7 @@ VU0_UPPER: "maddi"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x23 
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "subq"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x24 & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "subq"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x24 & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vu0_us_x f- vu0_uq;
 	local r_y:4 = vu0_us_y f- vu0_uq;
 	local r_z:4 = vu0_us_z f- vu0_uq;
@@ -854,7 +781,7 @@ VU0_UPPER: "subq"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x24 &
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "msubq"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x25 & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "msubq"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x25 & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vuACCx f- (vu0_us_x f* vu0_uq);
 	local r_y:4 = vuACCy f- (vu0_us_y f* vu0_uq);
 	local r_z:4 = vuACCz f- (vu0_us_z f* vu0_uq);
@@ -884,7 +811,7 @@ VU0_UPPER: "msubq"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",q" is vu0_u_op6=0x25 
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "subi"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x26 & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "subi"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x26 & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vu0_us_x f- vu0_ui;
 	local r_y:4 = vu0_us_y f- vu0_ui;
 	local r_z:4 = vu0_us_z f- vu0_ui;
@@ -914,7 +841,7 @@ VU0_UPPER: "subi"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x26 &
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "msubi"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x27 & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
+VU0_UPPER: "msubi"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x27 & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS {
 	local r_x:4 = vuACCx f- (vu0_us_x f* vu0_ui);
 	local r_y:4 = vuACCy f- (vu0_us_y f* vu0_ui);
 	local r_z:4 = vuACCz f- (vu0_us_z f* vu0_ui);
@@ -944,7 +871,7 @@ VU0_UPPER: "msubi"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^",i" is vu0_u_op6=0x27 
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "add"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x28 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS & VU0_UFT {
+VU0_UPPER: "add"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x28 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS & VU0_UFT {
 	local r_x:4 = vu0_us_x f+ vu0_ut_x;
 	local r_y:4 = vu0_us_y f+ vu0_ut_y;
 	local r_z:4 = vu0_us_z f+ vu0_ut_z;
@@ -974,7 +901,7 @@ VU0_UPPER: "add"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "madd"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x29 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS & VU0_UFT {
+VU0_UPPER: "madd"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x29 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS & VU0_UFT {
 	local r_x:4 = vuACCx f+ (vu0_us_x f* vu0_ut_x);
 	local r_y:4 = vuACCy f+ (vu0_us_y f* vu0_ut_y);
 	local r_z:4 = vuACCz f+ (vu0_us_z f* vu0_ut_z);
@@ -1004,7 +931,7 @@ VU0_UPPER: "madd"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "mul"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x2a & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS & VU0_UFT {
+VU0_UPPER: "mul"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x2a & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS & VU0_UFT {
 	local r_x:4 = vu0_us_x f* vu0_ut_x;
 	local r_y:4 = vu0_us_y f* vu0_ut_y;
 	local r_z:4 = vu0_us_z f* vu0_ut_z;
@@ -1034,7 +961,7 @@ VU0_UPPER: "mul"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "max"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x2b & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UFD & VU0_UFS & VU0_UFT {
+VU0_UPPER: "max"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x2b & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UFD & VU0_UFS & VU0_UFT {
 	local m_x:4 = vu0_us_x;
 	if (!(vu0_ut_x f> vu0_us_x)) goto <m_x_keep>;
 	m_x = vu0_ut_x;
@@ -1068,7 +995,7 @@ VU0_UPPER: "max"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "sub"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x2c & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS & VU0_UFT {
+VU0_UPPER: "sub"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x2c & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS & VU0_UFT {
 	local r_x:4 = vu0_us_x f- vu0_ut_x;
 	local r_y:4 = vu0_us_y f- vu0_ut_y;
 	local r_z:4 = vu0_us_z f- vu0_ut_z;
@@ -1098,7 +1025,7 @@ VU0_UPPER: "sub"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "msub"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x2d & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS & VU0_UFT {
+VU0_UPPER: "msub"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x2d & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS & VU0_UFT {
 	local r_x:4 = vuACCx f- (vu0_us_x f* vu0_ut_x);
 	local r_y:4 = vuACCy f- (vu0_us_y f* vu0_ut_y);
 	local r_z:4 = vuACCz f- (vu0_us_z f* vu0_ut_z);
@@ -1128,7 +1055,7 @@ VU0_UPPER: "msub"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "mini"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x2f & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UFD & VU0_UFS & VU0_UFT {
+VU0_UPPER: "mini"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x2f & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDW & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UFD & VU0_UFS & VU0_UFT {
 	local m_x:4 = vu0_us_x;
 	if (!(vu0_ut_x f< vu0_us_x)) goto <m_x_keep>;
 	m_x = vu0_ut_x;
@@ -1162,7 +1089,7 @@ VU0_UPPER: "mini"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6
 	build VU0_CUFDZ;
 	build VU0_CUFDW;
 }
-VU0_UPPER: "adda"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UBCR is vu0_u_op6>=0x3c & vu0_u_fd=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "adda"^VU0_UBC^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^","^VU0_UBCR is vu0_u_op6>=0x3c & vu0_u_fd=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vu0_us_x f+ VU0_UBCV;
 	local r_y:4 = vu0_us_y f+ VU0_UBCV;
 	local r_z:4 = vu0_us_z f+ VU0_UBCV;
@@ -1192,7 +1119,7 @@ VU0_UPPER: "adda"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UBCR is
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "suba"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UBCR is vu0_u_op6>=0x3c & vu0_u_fd=1 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "suba"^VU0_UBC^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^","^VU0_UBCR is vu0_u_op6>=0x3c & vu0_u_fd=1 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vu0_us_x f- VU0_UBCV;
 	local r_y:4 = vu0_us_y f- VU0_UBCV;
 	local r_z:4 = vu0_us_z f- VU0_UBCV;
@@ -1222,7 +1149,7 @@ VU0_UPPER: "suba"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UBCR is
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "madda"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UBCR is vu0_u_op6>=0x3c & vu0_u_fd=2 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "madda"^VU0_UBC^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^","^VU0_UBCR is vu0_u_op6>=0x3c & vu0_u_fd=2 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vuACCx f+ (vu0_us_x f* VU0_UBCV);
 	local r_y:4 = vuACCy f+ (vu0_us_y f* VU0_UBCV);
 	local r_z:4 = vuACCz f+ (vu0_us_z f* VU0_UBCV);
@@ -1252,7 +1179,7 @@ VU0_UPPER: "madda"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UBCR i
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "msuba"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UBCR is vu0_u_op6>=0x3c & vu0_u_fd=3 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "msuba"^VU0_UBC^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^","^VU0_UBCR is vu0_u_op6>=0x3c & vu0_u_fd=3 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vuACCx f- (vu0_us_x f* VU0_UBCV);
 	local r_y:4 = vuACCy f- (vu0_us_y f* VU0_UBCV);
 	local r_z:4 = vuACCz f- (vu0_us_z f* VU0_UBCV);
@@ -1282,7 +1209,7 @@ VU0_UPPER: "msuba"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UBCR i
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "mula"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UBCR is vu0_u_op6>=0x3c & vu0_u_fd=6 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "mula"^VU0_UBC^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^","^VU0_UBCR is vu0_u_op6>=0x3c & vu0_u_fd=6 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UBC & VU0_UBCR & VU0_UBCV & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vu0_us_x f* VU0_UBCV;
 	local r_y:4 = vu0_us_y f* VU0_UBCV;
 	local r_z:4 = vu0_us_z f* VU0_UBCV;
@@ -1312,7 +1239,7 @@ VU0_UPPER: "mula"^VU0_UBC^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UBCR is
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "mulaq"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x1fc & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "mulaq"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x1fc & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vu0_us_x f* vu0_uq;
 	local r_y:4 = vu0_us_y f* vu0_uq;
 	local r_z:4 = vu0_us_z f* vu0_uq;
@@ -1342,7 +1269,7 @@ VU0_UPPER: "mulaq"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x1
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "mulai"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x1fe & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "mulai"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x1fe & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vu0_us_x f* vu0_ui;
 	local r_y:4 = vu0_us_y f* vu0_ui;
 	local r_z:4 = vu0_us_z f* vu0_ui;
@@ -1372,7 +1299,7 @@ VU0_UPPER: "mulai"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x1
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "addaq"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x23c & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "addaq"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x23c & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vu0_us_x f+ vu0_uq;
 	local r_y:4 = vu0_us_y f+ vu0_uq;
 	local r_z:4 = vu0_us_z f+ vu0_uq;
@@ -1402,7 +1329,7 @@ VU0_UPPER: "addaq"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x2
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "maddaq"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x23d & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "maddaq"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x23d & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vuACCx f+ (vu0_us_x f* vu0_uq);
 	local r_y:4 = vuACCy f+ (vu0_us_y f* vu0_uq);
 	local r_z:4 = vuACCz f+ (vu0_us_z f* vu0_uq);
@@ -1432,7 +1359,7 @@ VU0_UPPER: "maddaq"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "addai"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x23e & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "addai"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x23e & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vu0_us_x f+ vu0_ui;
 	local r_y:4 = vu0_us_y f+ vu0_ui;
 	local r_z:4 = vu0_us_z f+ vu0_ui;
@@ -1462,7 +1389,7 @@ VU0_UPPER: "addai"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x2
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "maddai"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x23f & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "maddai"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x23f & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vuACCx f+ (vu0_us_x f* vu0_ui);
 	local r_y:4 = vuACCy f+ (vu0_us_y f* vu0_ui);
 	local r_z:4 = vuACCz f+ (vu0_us_z f* vu0_ui);
@@ -1492,7 +1419,7 @@ VU0_UPPER: "maddai"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "subaq"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x27c & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "subaq"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x27c & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vu0_us_x f- vu0_uq;
 	local r_y:4 = vu0_us_y f- vu0_uq;
 	local r_z:4 = vu0_us_z f- vu0_uq;
@@ -1522,7 +1449,7 @@ VU0_UPPER: "subaq"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x2
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "msubaq"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x27d & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "msubaq"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x27d & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vuACCx f- (vu0_us_x f* vu0_uq);
 	local r_y:4 = vuACCy f- (vu0_us_y f* vu0_uq);
 	local r_z:4 = vuACCz f- (vu0_us_z f* vu0_uq);
@@ -1552,7 +1479,7 @@ VU0_UPPER: "msubaq"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",q" is vu0_u_op11=0x
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "subai"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x27e & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "subai"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x27e & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vu0_us_x f- vu0_ui;
 	local r_y:4 = vu0_us_y f- vu0_ui;
 	local r_z:4 = vu0_us_z f- vu0_ui;
@@ -1582,7 +1509,7 @@ VU0_UPPER: "subai"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x2
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "msubai"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x27f & vu0_u_ft=0 & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
+VU0_UPPER: "msubai"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x27f & vu0_u_ft=0 & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS {
 	local r_x:4 = vuACCx f- (vu0_us_x f* vu0_ui);
 	local r_y:4 = vuACCy f- (vu0_us_y f* vu0_ui);
 	local r_z:4 = vuACCz f- (vu0_us_z f* vu0_ui);
@@ -1612,7 +1539,7 @@ VU0_UPPER: "msubai"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^",i" is vu0_u_op11=0x
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "adda"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op11=0x2bc & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS & VU0_UFT {
+VU0_UPPER: "adda"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op11=0x2bc & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS & VU0_UFT {
 	local r_x:4 = vu0_us_x f+ vu0_ut_x;
 	local r_y:4 = vu0_us_y f+ vu0_ut_y;
 	local r_z:4 = vu0_us_z f+ vu0_ut_z;
@@ -1642,7 +1569,7 @@ VU0_UPPER: "adda"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "madda"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op11=0x2bd & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS & VU0_UFT {
+VU0_UPPER: "madda"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op11=0x2bd & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS & VU0_UFT {
 	local r_x:4 = vuACCx f+ (vu0_us_x f* vu0_ut_x);
 	local r_y:4 = vuACCy f+ (vu0_us_y f* vu0_ut_y);
 	local r_z:4 = vuACCz f+ (vu0_us_z f* vu0_ut_z);
@@ -1672,7 +1599,7 @@ VU0_UPPER: "madda"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_o
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "mula"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op11=0x2be & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS & VU0_UFT {
+VU0_UPPER: "mula"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op11=0x2be & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS & VU0_UFT {
 	local r_x:4 = vu0_us_x f* vu0_ut_x;
 	local r_y:4 = vu0_us_y f* vu0_ut_y;
 	local r_z:4 = vu0_us_z f* vu0_ut_z;
@@ -1702,7 +1629,7 @@ VU0_UPPER: "mula"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "suba"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op11=0x2fc & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS & VU0_UFT {
+VU0_UPPER: "suba"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op11=0x2fc & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS & VU0_UFT {
 	local r_x:4 = vu0_us_x f- vu0_ut_x;
 	local r_y:4 = vu0_us_y f- vu0_ut_y;
 	local r_z:4 = vu0_us_z f- vu0_ut_z;
@@ -1732,7 +1659,7 @@ VU0_UPPER: "suba"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "msuba"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op11=0x2fd & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS & VU0_UFT {
+VU0_UPPER: "msuba"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op11=0x2fd & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCW & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS & VU0_UFT {
 	local r_x:4 = vuACCx f- (vu0_us_x f* vu0_ut_x);
 	local r_y:4 = vuACCy f- (vu0_us_y f* vu0_ut_y);
 	local r_z:4 = vuACCz f- (vu0_us_z f* vu0_ut_z);
@@ -1762,7 +1689,7 @@ VU0_UPPER: "msuba"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_o
 	build VU0_CACCZ;
 	build VU0_CACCW;
 }
-VU0_UPPER: "opmula"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op11=0x2fe & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS & VU0_UFT {
+VU0_UPPER: "opmula"^vu0_u_flagsn^"."^vu0_u_destn VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_op11=0x2fe & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CACCX & VU0_CACCY & VU0_CACCZ & VU0_UACC & VU0_UDMASK & VU0_UFS & VU0_UFT {
 	local r_x:4 = vu0_us_y f* vu0_ut_z;
 	local r_y:4 = vu0_us_z f* vu0_ut_x;
 	local r_z:4 = vu0_us_x f* vu0_ut_y;
@@ -1786,7 +1713,7 @@ VU0_UPPER: "opmula"^VU0_UF^"."^VU0_UD VU0_UACC^","^VU0_UFS^","^VU0_UFT is vu0_u_
 	build VU0_CACCY;
 	build VU0_CACCZ;
 }
-VU0_UPPER: "opmsub"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x2e & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS & VU0_UFT {
+VU0_UPPER: "opmsub"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_op6=0x2e & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFDX & VU0_CUFDY & VU0_CUFDZ & VU0_UDMASK & VU0_UFD & VU0_UFS & VU0_UFT {
 	local r_x:4 = vuACCx f- (vu0_us_y f* vu0_ut_z);
 	local r_y:4 = vuACCy f- (vu0_us_z f* vu0_ut_x);
 	local r_z:4 = vuACCz f- (vu0_us_x f* vu0_ut_y);
@@ -1810,7 +1737,7 @@ VU0_UPPER: "opmsub"^VU0_UF^"."^VU0_UD VU0_UFD^","^VU0_UFS^","^VU0_UFT is vu0_u_o
 	build VU0_CUFDY;
 	build VU0_CUFDZ;
 }
-VU0_UPPER: "abs"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x1fd & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
+VU0_UPPER: "abs"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFT^","^VU0_UFS is vu0_u_op11=0x1fd & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
 	vu0_tr_x = abs(vu0_us_x);
 	vu0_tr_y = abs(vu0_us_y);
 	vu0_tr_z = abs(vu0_us_z);
@@ -1820,7 +1747,7 @@ VU0_UPPER: "abs"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x1fd & vu0
 	build VU0_CUFTZ;
 	build VU0_CUFTW;
 }
-VU0_UPPER: "itof0"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x13c & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
+VU0_UPPER: "itof0"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFT^","^VU0_UFS is vu0_u_op11=0x13c & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
 	vu0_tr_x = int2float(vu0_us_x) f/ int2float(1:4);
 	vu0_tr_y = int2float(vu0_us_y) f/ int2float(1:4);
 	vu0_tr_z = int2float(vu0_us_z) f/ int2float(1:4);
@@ -1830,7 +1757,7 @@ VU0_UPPER: "itof0"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x13c & v
 	build VU0_CUFTZ;
 	build VU0_CUFTW;
 }
-VU0_UPPER: "ftoi0"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x17c & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
+VU0_UPPER: "ftoi0"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFT^","^VU0_UFS is vu0_u_op11=0x17c & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
 	vu0_tr_x = trunc(vu0_us_x f* int2float(1:4));
 	vu0_tr_y = trunc(vu0_us_y f* int2float(1:4));
 	vu0_tr_z = trunc(vu0_us_z f* int2float(1:4));
@@ -1840,7 +1767,7 @@ VU0_UPPER: "ftoi0"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x17c & v
 	build VU0_CUFTZ;
 	build VU0_CUFTW;
 }
-VU0_UPPER: "itof4"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x13d & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
+VU0_UPPER: "itof4"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFT^","^VU0_UFS is vu0_u_op11=0x13d & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
 	vu0_tr_x = int2float(vu0_us_x) f/ int2float(16:4);
 	vu0_tr_y = int2float(vu0_us_y) f/ int2float(16:4);
 	vu0_tr_z = int2float(vu0_us_z) f/ int2float(16:4);
@@ -1850,7 +1777,7 @@ VU0_UPPER: "itof4"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x13d & v
 	build VU0_CUFTZ;
 	build VU0_CUFTW;
 }
-VU0_UPPER: "ftoi4"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x17d & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
+VU0_UPPER: "ftoi4"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFT^","^VU0_UFS is vu0_u_op11=0x17d & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
 	vu0_tr_x = trunc(vu0_us_x f* int2float(16:4));
 	vu0_tr_y = trunc(vu0_us_y f* int2float(16:4));
 	vu0_tr_z = trunc(vu0_us_z f* int2float(16:4));
@@ -1860,7 +1787,7 @@ VU0_UPPER: "ftoi4"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x17d & v
 	build VU0_CUFTZ;
 	build VU0_CUFTW;
 }
-VU0_UPPER: "itof12"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x13e & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
+VU0_UPPER: "itof12"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFT^","^VU0_UFS is vu0_u_op11=0x13e & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
 	vu0_tr_x = int2float(vu0_us_x) f/ int2float(4096:4);
 	vu0_tr_y = int2float(vu0_us_y) f/ int2float(4096:4);
 	vu0_tr_z = int2float(vu0_us_z) f/ int2float(4096:4);
@@ -1870,7 +1797,7 @@ VU0_UPPER: "itof12"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x13e & 
 	build VU0_CUFTZ;
 	build VU0_CUFTW;
 }
-VU0_UPPER: "ftoi12"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x17e & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
+VU0_UPPER: "ftoi12"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFT^","^VU0_UFS is vu0_u_op11=0x17e & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
 	vu0_tr_x = trunc(vu0_us_x f* int2float(4096:4));
 	vu0_tr_y = trunc(vu0_us_y f* int2float(4096:4));
 	vu0_tr_z = trunc(vu0_us_z f* int2float(4096:4));
@@ -1880,7 +1807,7 @@ VU0_UPPER: "ftoi12"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x17e & 
 	build VU0_CUFTZ;
 	build VU0_CUFTW;
 }
-VU0_UPPER: "itof15"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x13f & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
+VU0_UPPER: "itof15"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFT^","^VU0_UFS is vu0_u_op11=0x13f & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
 	vu0_tr_x = int2float(vu0_us_x) f/ int2float(32768:4);
 	vu0_tr_y = int2float(vu0_us_y) f/ int2float(32768:4);
 	vu0_tr_z = int2float(vu0_us_z) f/ int2float(32768:4);
@@ -1890,7 +1817,7 @@ VU0_UPPER: "itof15"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x13f & 
 	build VU0_CUFTZ;
 	build VU0_CUFTW;
 }
-VU0_UPPER: "ftoi15"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x17f & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
+VU0_UPPER: "ftoi15"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFT^","^VU0_UFS is vu0_u_op11=0x17f & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_CUFTW & VU0_CUFTX & VU0_CUFTY & VU0_CUFTZ & VU0_UFS & VU0_UFT {
 	vu0_tr_x = trunc(vu0_us_x f* int2float(32768:4));
 	vu0_tr_y = trunc(vu0_us_y f* int2float(32768:4));
 	vu0_tr_z = trunc(vu0_us_z f* int2float(32768:4));
@@ -1900,7 +1827,7 @@ VU0_UPPER: "ftoi15"^VU0_UF^"."^VU0_UD VU0_UFT^","^VU0_UFS is vu0_u_op11=0x17f & 
 	build VU0_CUFTZ;
 	build VU0_CUFTW;
 }
-VU0_UPPER: "clipw"^VU0_UF^"."^VU0_UD VU0_UFS^","^vu0_u_ft^"w" is vu0_u_op11=0x1ff & vu0_u_dest=0xe & vu0_u_res=0 & VU0_UF & VU0_UD & VU0_UFS & vu0_u_ft {
+VU0_UPPER: "clipw"^vu0_u_flagsn^"."^vu0_u_destn VU0_UFS^","^vu0_u_ft^"w" is vu0_u_op11=0x1ff & vu0_u_dest=0xe & vu0_u_res=0 & vu0_u_flagsn & vu0_u_destn & VU0_UFS & vu0_u_ft {
 	local lim:4 = abs(vu0_ut_w);
 	local bits:4 = 0;
 	bits = bits | (zext(vu0_us_x f> lim) << 0);
@@ -1911,12 +1838,12 @@ VU0_UPPER: "clipw"^VU0_UF^"."^VU0_UD VU0_UFS^","^vu0_u_ft^"w" is vu0_u_op11=0x1f
 	bits = bits | (zext(vu0_us_z f< f- lim) << 5);
 	vuCF = ((vuCF << 6) | bits) & 0xffffff;
 }
-VU0_UPPER: "nop"^VU0_UF is vu0_u_op11=0x2ff & vu0_u_res=0 & vu0_u_dest=0 & vu0_u_ft=0 & vu0_u_fs=0 & VU0_UF { }
+VU0_UPPER: "nop"^vu0_u_flagsn is vu0_u_op11=0x2ff & vu0_u_res=0 & vu0_u_dest=0 & vu0_u_ft=0 & vu0_u_fs=0 & vu0_u_flagsn { }
 # The reference decodes each half on its own and shows an invalid half as *unknown*.
 VU0_UPPER: "*unknown*" is vu0_u_word { }
 
 # Lower instructions.
-VU0_LOWER: "lq."^VU0_LD VU0_LFT^","^vu0_l_imm11^"("^VU0_IS^")" is vu0_l_op7=0x0 & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_IS & VU0_LD & VU0_LFT & VU0_RIS & vu0_l_imm11 {
+VU0_LOWER: "lq."^vu0_l_destn VU0_LFT^","^vu0_l_imm11^"("^VU0_IS^")" is vu0_l_op7=0x0 & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_IS & vu0_l_destn & VU0_LFT & VU0_RIS & vu0_l_imm11 {
 	local qa:2 = (VU0_RIS + vu0_l_imm11) & 0xff;
 	vu0_tr_ea = 0x11004000 + zext(qa) * 16;
 	vu0_tr_x = *[ram]:4 (vu0_tr_ea + 0);
@@ -1928,7 +1855,7 @@ VU0_LOWER: "lq."^VU0_LD VU0_LFT^","^vu0_l_imm11^"("^VU0_IS^")" is vu0_l_op7=0x0 
 	build VU0_CLFTZ;
 	build VU0_CLFTW;
 }
-VU0_LOWER: "sq."^VU0_LD VU0_LFS^","^vu0_l_imm11^"("^VU0_IT^")" is vu0_l_op7=0x1 & VU0_CSTW & VU0_CSTX & VU0_CSTY & VU0_CSTZ & VU0_IT & VU0_LD & VU0_LFS & VU0_RIT & VU0_RLFSW & VU0_RLFSX & VU0_RLFSY & VU0_RLFSZ & vu0_l_imm11 {
+VU0_LOWER: "sq."^vu0_l_destn VU0_LFS^","^vu0_l_imm11^"("^VU0_IT^")" is vu0_l_op7=0x1 & VU0_CSTW & VU0_CSTX & VU0_CSTY & VU0_CSTZ & VU0_IT & vu0_l_destn & VU0_LFS & VU0_RIT & VU0_RLFSW & VU0_RLFSX & VU0_RLFSY & VU0_RLFSZ & vu0_l_imm11 {
 	local qa:2 = (VU0_RIT + vu0_l_imm11) & 0xff;
 	vu0_tr_ea = 0x11004000 + zext(qa) * 16;
 	vu0_tr_x = VU0_RLFSX;
@@ -1940,12 +1867,12 @@ VU0_LOWER: "sq."^VU0_LD VU0_LFS^","^vu0_l_imm11^"("^VU0_IT^")" is vu0_l_op7=0x1 
 	build VU0_CSTZ;
 	build VU0_CSTW;
 }
-VU0_LOWER: "ilw."^VU0_LD VU0_IT^","^vu0_l_imm11^"("^VU0_IS^")"^VU0_LD2 is vu0_l_op7=0x4 & VU0_CILW & VU0_IS & VU0_IT & VU0_LD & VU0_LD2 & VU0_RIS & vu0_l_imm11 {
+VU0_LOWER: "ilw."^vu0_l_destn VU0_IT^","^vu0_l_imm11^"("^VU0_IS^")"^vu0_l_destn2 is vu0_l_op7=0x4 & VU0_CILW & VU0_IS & VU0_IT & vu0_l_destn & vu0_l_destn2 & VU0_RIS & vu0_l_imm11 {
 	local qa:2 = (VU0_RIS + vu0_l_imm11) & 0xff;
 	vu0_tr_ea = 0x11004000 + zext(qa) * 16;
 	build VU0_CILW;
 }
-VU0_LOWER: "isw."^VU0_LD VU0_IT^","^vu0_l_imm11^"("^VU0_IS^")"^VU0_LD2 is vu0_l_op7=0x5 & VU0_CSTW & VU0_CSTX & VU0_CSTY & VU0_CSTZ & VU0_IS & VU0_IT & VU0_LD & VU0_LD2 & VU0_RIS & VU0_RIT & vu0_l_imm11 {
+VU0_LOWER: "isw."^vu0_l_destn VU0_IT^","^vu0_l_imm11^"("^VU0_IS^")"^vu0_l_destn2 is vu0_l_op7=0x5 & VU0_CSTW & VU0_CSTX & VU0_CSTY & VU0_CSTZ & VU0_IS & VU0_IT & vu0_l_destn & vu0_l_destn2 & VU0_RIS & VU0_RIT & vu0_l_imm11 {
 	local qa:2 = (VU0_RIS + vu0_l_imm11) & 0xff;
 	vu0_tr_ea = 0x11004000 + zext(qa) * 16;
 	vu0_tr_x = zext(VU0_RIT);
@@ -2014,7 +1941,7 @@ VU0_LOWER: "iand" VU0_ID^","^VU0_IS^","^VU0_IT is vu0_l_op7=0x40 & vu0_l_op6=0x3
 VU0_LOWER: "ior" VU0_ID^","^VU0_IS^","^VU0_IT is vu0_l_op7=0x40 & vu0_l_op6=0x35 & VU0_ID & VU0_IS & VU0_IT & VU0_RIS & VU0_RIT & VU0_WID & vu0_l_dest=0 {
 	VU0_WID = VU0_RIS | VU0_RIT;
 }
-VU0_LOWER: "move."^VU0_LD VU0_LFT^","^VU0_LFS is vu0_l_op7=0x40 & vu0_l_op11=0x33c & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_LD & VU0_LFS & VU0_LFT & VU0_RLFSW & VU0_RLFSX & VU0_RLFSY & VU0_RLFSZ {
+VU0_LOWER: "move."^vu0_l_destn VU0_LFT^","^VU0_LFS is vu0_l_op7=0x40 & vu0_l_op11=0x33c & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & vu0_l_destn & VU0_LFS & VU0_LFT & VU0_RLFSW & VU0_RLFSX & VU0_RLFSY & VU0_RLFSZ {
 	local r_x:4 = VU0_RLFSX;
 	local r_y:4 = VU0_RLFSY;
 	local r_z:4 = VU0_RLFSZ;
@@ -2028,7 +1955,7 @@ VU0_LOWER: "move."^VU0_LD VU0_LFT^","^VU0_LFS is vu0_l_op7=0x40 & vu0_l_op11=0x3
 	build VU0_CLFTZ;
 	build VU0_CLFTW;
 }
-VU0_LOWER: "mr32."^VU0_LD VU0_LFT^","^VU0_LFS is vu0_l_op7=0x40 & vu0_l_op11=0x33d & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_LD & VU0_LFS & VU0_LFT & VU0_RLFSW & VU0_RLFSX & VU0_RLFSY & VU0_RLFSZ {
+VU0_LOWER: "mr32."^vu0_l_destn VU0_LFT^","^VU0_LFS is vu0_l_op7=0x40 & vu0_l_op11=0x33d & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & vu0_l_destn & VU0_LFS & VU0_LFT & VU0_RLFSW & VU0_RLFSX & VU0_RLFSY & VU0_RLFSZ {
 	local r_x:4 = VU0_RLFSY;
 	local r_y:4 = VU0_RLFSZ;
 	local r_z:4 = VU0_RLFSW;
@@ -2042,7 +1969,7 @@ VU0_LOWER: "mr32."^VU0_LD VU0_LFT^","^VU0_LFS is vu0_l_op7=0x40 & vu0_l_op11=0x3
 	build VU0_CLFTZ;
 	build VU0_CLFTW;
 }
-VU0_LOWER: "lqi."^VU0_LD VU0_LFT^",("^VU0_IS^"++)" is vu0_l_op7=0x40 & vu0_l_op11=0x37c & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_IS & VU0_LD & VU0_LFT & VU0_RIS & VU0_WIS {
+VU0_LOWER: "lqi."^vu0_l_destn VU0_LFT^",("^VU0_IS^"++)" is vu0_l_op7=0x40 & vu0_l_op11=0x37c & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_IS & vu0_l_destn & VU0_LFT & VU0_RIS & VU0_WIS {
 	local qa:2 = (VU0_RIS) & 0xff;
 	vu0_tr_ea = 0x11004000 + zext(qa) * 16;
 	vu0_tr_x = *[ram]:4 (vu0_tr_ea + 0);
@@ -2055,7 +1982,7 @@ VU0_LOWER: "lqi."^VU0_LD VU0_LFT^",("^VU0_IS^"++)" is vu0_l_op7=0x40 & vu0_l_op1
 	build VU0_CLFTW;
 	VU0_WIS = VU0_RIS + 1;
 }
-VU0_LOWER: "sqi."^VU0_LD VU0_LFS^",("^VU0_IT^"++)" is vu0_l_op7=0x40 & vu0_l_op11=0x37d & VU0_CSTW & VU0_CSTX & VU0_CSTY & VU0_CSTZ & VU0_IT & VU0_LD & VU0_LFS & VU0_RIT & VU0_RLFSW & VU0_RLFSX & VU0_RLFSY & VU0_RLFSZ & VU0_WIT {
+VU0_LOWER: "sqi."^vu0_l_destn VU0_LFS^",("^VU0_IT^"++)" is vu0_l_op7=0x40 & vu0_l_op11=0x37d & VU0_CSTW & VU0_CSTX & VU0_CSTY & VU0_CSTZ & VU0_IT & vu0_l_destn & VU0_LFS & VU0_RIT & VU0_RLFSW & VU0_RLFSX & VU0_RLFSY & VU0_RLFSZ & VU0_WIT {
 	local qa:2 = (VU0_RIT) & 0xff;
 	vu0_tr_ea = 0x11004000 + zext(qa) * 16;
 	vu0_tr_x = VU0_RLFSX;
@@ -2068,7 +1995,7 @@ VU0_LOWER: "sqi."^VU0_LD VU0_LFS^",("^VU0_IT^"++)" is vu0_l_op7=0x40 & vu0_l_op1
 	build VU0_CSTW;
 	VU0_WIT = VU0_RIT + 1;
 }
-VU0_LOWER: "lqd."^VU0_LD VU0_LFT^",(--"^VU0_IS^")" is vu0_l_op7=0x40 & vu0_l_op11=0x37e & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_IS & VU0_LD & VU0_LFT & VU0_RIS & VU0_WIS {
+VU0_LOWER: "lqd."^vu0_l_destn VU0_LFT^",(--"^VU0_IS^")" is vu0_l_op7=0x40 & vu0_l_op11=0x37e & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_IS & vu0_l_destn & VU0_LFT & VU0_RIS & VU0_WIS {
 	local dec:2 = VU0_RIS - 1;
 	VU0_WIS = dec;
 	local qa:2 = (dec) & 0xff;
@@ -2082,7 +2009,7 @@ VU0_LOWER: "lqd."^VU0_LD VU0_LFT^",(--"^VU0_IS^")" is vu0_l_op7=0x40 & vu0_l_op1
 	build VU0_CLFTZ;
 	build VU0_CLFTW;
 }
-VU0_LOWER: "sqd."^VU0_LD VU0_LFS^",(--"^VU0_IT^")" is vu0_l_op7=0x40 & vu0_l_op11=0x37f & VU0_CSTW & VU0_CSTX & VU0_CSTY & VU0_CSTZ & VU0_IT & VU0_LD & VU0_LFS & VU0_RIT & VU0_RLFSW & VU0_RLFSX & VU0_RLFSY & VU0_RLFSZ & VU0_WIT {
+VU0_LOWER: "sqd."^vu0_l_destn VU0_LFS^",(--"^VU0_IT^")" is vu0_l_op7=0x40 & vu0_l_op11=0x37f & VU0_CSTW & VU0_CSTX & VU0_CSTY & VU0_CSTZ & VU0_IT & vu0_l_destn & VU0_LFS & VU0_RIT & VU0_RLFSW & VU0_RLFSX & VU0_RLFSY & VU0_RLFSZ & VU0_WIT {
 	local dec:2 = VU0_RIT - 1;
 	VU0_WIT = dec;
 	local qa:2 = (dec) & 0xff;
@@ -2122,7 +2049,7 @@ VU0_LOWER: "waitq" is vu0_l_op7=0x40 & vu0_l_op11=0x3bf  & vu0_l_dest=0 & vu0_l_
 VU0_LOWER: "mtir" VU0_IT^","^vu0_l_fs^VU0_LFSF is vu0_l_op7=0x40 & vu0_l_op11=0x3fc & VU0_IT & VU0_LFSF & VU0_RLFSF & VU0_WIT & vu0_l_fs & vu0_l_ftf=0 {
 	VU0_WIT = VU0_RLFSF:2;
 }
-VU0_LOWER: "mfir."^VU0_LD VU0_LFT^","^VU0_IS is vu0_l_op7=0x40 & vu0_l_op11=0x3fd & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_IS & VU0_LD & VU0_LFT & VU0_RIS {
+VU0_LOWER: "mfir."^vu0_l_destn VU0_LFT^","^VU0_IS is vu0_l_op7=0x40 & vu0_l_op11=0x3fd & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_IS & vu0_l_destn & VU0_LFT & VU0_RIS {
 	local iv:4 = sext(VU0_RIS);
 	vu0_tr_x = iv;
 	vu0_tr_y = iv;
@@ -2133,12 +2060,12 @@ VU0_LOWER: "mfir."^VU0_LD VU0_LFT^","^VU0_IS is vu0_l_op7=0x40 & vu0_l_op11=0x3f
 	build VU0_CLFTZ;
 	build VU0_CLFTW;
 }
-VU0_LOWER: "ilwr."^VU0_LD VU0_IT^",("^VU0_IS^")"^VU0_LD2 is vu0_l_op7=0x40 & vu0_l_op11=0x3fe & VU0_CILW & VU0_IS & VU0_IT & VU0_LD & VU0_LD2 & VU0_RIS {
+VU0_LOWER: "ilwr."^vu0_l_destn VU0_IT^",("^VU0_IS^")"^vu0_l_destn2 is vu0_l_op7=0x40 & vu0_l_op11=0x3fe & VU0_CILW & VU0_IS & VU0_IT & vu0_l_destn & vu0_l_destn2 & VU0_RIS {
 	local qa:2 = (VU0_RIS) & 0xff;
 	vu0_tr_ea = 0x11004000 + zext(qa) * 16;
 	build VU0_CILW;
 }
-VU0_LOWER: "iswr."^VU0_LD VU0_IT^",("^VU0_IS^")"^VU0_LD2 is vu0_l_op7=0x40 & vu0_l_op11=0x3ff & VU0_CSTW & VU0_CSTX & VU0_CSTY & VU0_CSTZ & VU0_IS & VU0_IT & VU0_LD & VU0_LD2 & VU0_RIS & VU0_RIT {
+VU0_LOWER: "iswr."^vu0_l_destn VU0_IT^",("^VU0_IS^")"^vu0_l_destn2 is vu0_l_op7=0x40 & vu0_l_op11=0x3ff & VU0_CSTW & VU0_CSTX & VU0_CSTY & VU0_CSTZ & VU0_IS & VU0_IT & vu0_l_destn & vu0_l_destn2 & VU0_RIS & VU0_RIT {
 	local qa:2 = (VU0_RIS) & 0xff;
 	vu0_tr_ea = 0x11004000 + zext(qa) * 16;
 	vu0_tr_x = zext(VU0_RIT);
@@ -2150,7 +2077,7 @@ VU0_LOWER: "iswr."^VU0_LD VU0_IT^",("^VU0_IS^")"^VU0_LD2 is vu0_l_op7=0x40 & vu0
 	build VU0_CSTZ;
 	build VU0_CSTW;
 }
-VU0_LOWER: "rnext."^VU0_LD VU0_LFT^",r" is vu0_l_op7=0x40 & vu0_l_op11=0x43c & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_LD & VU0_LFT & vu0_l_is=0 {
+VU0_LOWER: "rnext."^vu0_l_destn VU0_LFT^",r" is vu0_l_op7=0x40 & vu0_l_op11=0x43c & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & vu0_l_destn & VU0_LFT & vu0_l_is=0 {
 	local fb:4 = ((vuR >> 4) ^ (vuR >> 22)) & 1;
 	vuR = (((vuR << 1) ^ fb) & 0x7fffff) | 0x3f800000;
 	vu0_tr_x = vuR;
@@ -2162,7 +2089,7 @@ VU0_LOWER: "rnext."^VU0_LD VU0_LFT^",r" is vu0_l_op7=0x40 & vu0_l_op11=0x43c & V
 	build VU0_CLFTZ;
 	build VU0_CLFTW;
 }
-VU0_LOWER: "rget."^VU0_LD VU0_LFT^",r" is vu0_l_op7=0x40 & vu0_l_op11=0x43d & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_LD & VU0_LFT & vu0_l_is=0 {
+VU0_LOWER: "rget."^vu0_l_destn VU0_LFT^",r" is vu0_l_op7=0x40 & vu0_l_op11=0x43d & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & vu0_l_destn & VU0_LFT & vu0_l_is=0 {
 	vu0_tr_x = vuR;
 	vu0_tr_y = vuR;
 	vu0_tr_z = vuR;
@@ -2178,7 +2105,7 @@ VU0_LOWER: "rinit r,"^vu0_l_fs^VU0_LFSF is vu0_l_op7=0x40 & vu0_l_op11=0x43e & V
 VU0_LOWER: "rxor r,"^vu0_l_fs^VU0_LFSF is vu0_l_op7=0x40 & vu0_l_op11=0x43f & VU0_LFSF & VU0_RLFSF & vu0_l_fs & vu0_l_ftf=0 & vu0_l_ft=0 {
 	vuR = 0x3f800000 | ((vuR ^ VU0_RLFSF) & 0x7fffff);
 }
-VU0_LOWER: "mfp."^VU0_LD VU0_LFT^",p" is vu0_l_op7=0x40 & vu0_l_op11=0x67c & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & VU0_LD & VU0_LFT & vu0_l_is=0 {
+VU0_LOWER: "mfp."^vu0_l_destn VU0_LFT^",p" is vu0_l_op7=0x40 & vu0_l_op11=0x67c & VU0_CLFTW & VU0_CLFTX & VU0_CLFTY & VU0_CLFTZ & vu0_l_destn & VU0_LFT & vu0_l_is=0 {
 	vu0_tr_x = P;
 	vu0_tr_y = P;
 	vu0_tr_z = P;
@@ -2574,6 +2501,11 @@ define token vu1_instr(64)
 	vu1_l_imm24 = (0,23) dec
 	vu1_l_b24 = (24,24)
 	vu1_l_hi3 = (22,24)
+	# The flags and dest masks again, as named fields for display (see the Display section).
+	vu1_u_flagsn = (59,63)
+	vu1_u_destn = (53,56)
+	vu1_l_destn = (21,24)
+	vu1_l_destn2 = (21,24)
 	vu1_l_lo6 = (0,5)
 	# Upper instruction (second word).
 	vu1_u_word = (32,63)
@@ -2627,86 +2559,8 @@ attach variables [ vu1_l_fty vu1_l_fsy vu1_u_fty vu1_u_fsy vu1_u_fdy ] [ vu1_vf0
 attach variables [ vu1_l_ftz vu1_l_fsz vu1_u_ftz vu1_u_fsz vu1_u_fdz ] [ vu1_vf00_z vu1_vf01_z vu1_vf02_z vu1_vf03_z vu1_vf04_z vu1_vf05_z vu1_vf06_z vu1_vf07_z vu1_vf08_z vu1_vf09_z vu1_vf10_z vu1_vf11_z vu1_vf12_z vu1_vf13_z vu1_vf14_z vu1_vf15_z vu1_vf16_z vu1_vf17_z vu1_vf18_z vu1_vf19_z vu1_vf20_z vu1_vf21_z vu1_vf22_z vu1_vf23_z vu1_vf24_z vu1_vf25_z vu1_vf26_z vu1_vf27_z vu1_vf28_z vu1_vf29_z vu1_vf30_z vu1_vf31_z ];
 attach variables [ vu1_l_ftw vu1_l_fsw vu1_u_ftw vu1_u_fsw vu1_u_fdw ] [ vu1_vf00_w vu1_vf01_w vu1_vf02_w vu1_vf03_w vu1_vf04_w vu1_vf05_w vu1_vf06_w vu1_vf07_w vu1_vf08_w vu1_vf09_w vu1_vf10_w vu1_vf11_w vu1_vf12_w vu1_vf13_w vu1_vf14_w vu1_vf15_w vu1_vf16_w vu1_vf17_w vu1_vf18_w vu1_vf19_w vu1_vf20_w vu1_vf21_w vu1_vf22_w vu1_vf23_w vu1_vf24_w vu1_vf25_w vu1_vf26_w vu1_vf27_w vu1_vf28_w vu1_vf29_w vu1_vf30_w vu1_vf31_w ];
 
-VU1_UD: "" is vu1_u_dest=0 { }
-VU1_UD: "w" is vu1_u_dest=1 { }
-VU1_UD: "z" is vu1_u_dest=2 { }
-VU1_UD: "zw" is vu1_u_dest=3 { }
-VU1_UD: "y" is vu1_u_dest=4 { }
-VU1_UD: "yw" is vu1_u_dest=5 { }
-VU1_UD: "yz" is vu1_u_dest=6 { }
-VU1_UD: "yzw" is vu1_u_dest=7 { }
-VU1_UD: "x" is vu1_u_dest=8 { }
-VU1_UD: "xw" is vu1_u_dest=9 { }
-VU1_UD: "xz" is vu1_u_dest=10 { }
-VU1_UD: "xzw" is vu1_u_dest=11 { }
-VU1_UD: "xy" is vu1_u_dest=12 { }
-VU1_UD: "xyw" is vu1_u_dest=13 { }
-VU1_UD: "xyz" is vu1_u_dest=14 { }
-VU1_UD: "xyzw" is vu1_u_dest=15 { }
-VU1_LD: "" is vu1_l_dest=0 { }
-VU1_LD: "w" is vu1_l_dest=1 { }
-VU1_LD: "z" is vu1_l_dest=2 { }
-VU1_LD: "zw" is vu1_l_dest=3 { }
-VU1_LD: "y" is vu1_l_dest=4 { }
-VU1_LD: "yw" is vu1_l_dest=5 { }
-VU1_LD: "yz" is vu1_l_dest=6 { }
-VU1_LD: "yzw" is vu1_l_dest=7 { }
-VU1_LD: "x" is vu1_l_dest=8 { }
-VU1_LD: "xw" is vu1_l_dest=9 { }
-VU1_LD: "xz" is vu1_l_dest=10 { }
-VU1_LD: "xzw" is vu1_l_dest=11 { }
-VU1_LD: "xy" is vu1_l_dest=12 { }
-VU1_LD: "xyw" is vu1_l_dest=13 { }
-VU1_LD: "xyz" is vu1_l_dest=14 { }
-VU1_LD: "xyzw" is vu1_l_dest=15 { }
-VU1_LD2: "" is vu1_l_dest=0 { }
-VU1_LD2: "w" is vu1_l_dest=1 { }
-VU1_LD2: "z" is vu1_l_dest=2 { }
-VU1_LD2: "zw" is vu1_l_dest=3 { }
-VU1_LD2: "y" is vu1_l_dest=4 { }
-VU1_LD2: "yw" is vu1_l_dest=5 { }
-VU1_LD2: "yz" is vu1_l_dest=6 { }
-VU1_LD2: "yzw" is vu1_l_dest=7 { }
-VU1_LD2: "x" is vu1_l_dest=8 { }
-VU1_LD2: "xw" is vu1_l_dest=9 { }
-VU1_LD2: "xz" is vu1_l_dest=10 { }
-VU1_LD2: "xzw" is vu1_l_dest=11 { }
-VU1_LD2: "xy" is vu1_l_dest=12 { }
-VU1_LD2: "xyw" is vu1_l_dest=13 { }
-VU1_LD2: "xyz" is vu1_l_dest=14 { }
-VU1_LD2: "xyzw" is vu1_l_dest=15 { }
-VU1_UF: "" is vu1_u_flags=0 { }
-VU1_UF: "[t]" is vu1_u_flags=1 { }
-VU1_UF: "[d]" is vu1_u_flags=2 { }
-VU1_UF: "[dt]" is vu1_u_flags=3 { }
-VU1_UF: "[m]" is vu1_u_flags=4 { }
-VU1_UF: "[mt]" is vu1_u_flags=5 { }
-VU1_UF: "[md]" is vu1_u_flags=6 { }
-VU1_UF: "[mdt]" is vu1_u_flags=7 { }
-VU1_UF: "[e]" is vu1_u_flags=8 { }
-VU1_UF: "[et]" is vu1_u_flags=9 { }
-VU1_UF: "[ed]" is vu1_u_flags=10 { }
-VU1_UF: "[edt]" is vu1_u_flags=11 { }
-VU1_UF: "[em]" is vu1_u_flags=12 { }
-VU1_UF: "[emt]" is vu1_u_flags=13 { }
-VU1_UF: "[emd]" is vu1_u_flags=14 { }
-VU1_UF: "[emdt]" is vu1_u_flags=15 { }
-VU1_UF: "[i]" is vu1_u_flags=16 { }
-VU1_UF: "[it]" is vu1_u_flags=17 { }
-VU1_UF: "[id]" is vu1_u_flags=18 { }
-VU1_UF: "[idt]" is vu1_u_flags=19 { }
-VU1_UF: "[im]" is vu1_u_flags=20 { }
-VU1_UF: "[imt]" is vu1_u_flags=21 { }
-VU1_UF: "[imd]" is vu1_u_flags=22 { }
-VU1_UF: "[imdt]" is vu1_u_flags=23 { }
-VU1_UF: "[ie]" is vu1_u_flags=24 { }
-VU1_UF: "[iet]" is vu1_u_flags=25 { }
-VU1_UF: "[ied]" is vu1_u_flags=26 { }
-VU1_UF: "[iedt]" is vu1_u_flags=27 { }
-VU1_UF: "[iem]" is vu1_u_flags=28 { }
-VU1_UF: "[iemt]" is vu1_u_flags=29 { }
-VU1_UF: "[iemd]" is vu1_u_flags=30 { }
-VU1_UF: "[iemdt]" is vu1_u_flags=31 { }
+attach names [ vu1_u_flagsn ] [ "" "[t]" "[d]" "[dt]" "[m]" "[mt]" "[md]" "[mdt]" "[e]" "[et]" "[ed]" "[edt]" "[em]" "[emt]" "[emd]" "[emdt]" "[i]" "[it]" "[id]" "[idt]" "[im]" "[imt]" "[imd]" "[imdt]" "[ie]" "[iet]" "[ied]" "[iedt]" "[iem]" "[iemt]" "[iemd]" "[iemdt]" ];
+attach names [ vu1_u_destn vu1_l_destn vu1_l_destn2 ] [ "" "w" "z" "zw" "y" "yw" "yz" "yzw" "x" "xw" "xz" "xzw" "xy" "xyw" "xyz" "xyzw" ];
 VU1_UBC: "x" is vu1_u_bc=0 { }
 VU1_UBC: "y" is vu1_u_bc=1 { }
 VU1_UBC: "z" is vu1_u_bc=2 { }
@@ -2818,13 +2672,13 @@ VU1_USNAP: is VU1_RUFSX & VU1_RUFTX & VU1_RUFSY & VU1_RUFTY & VU1_RUFSZ & VU1_RU
 }
 
 # Display operands.
-VU1_UFD: vu1_u_fd^VU1_UD is vu1_u_fd & VU1_UD { }
-VU1_UFS: vu1_u_fs^VU1_UD is vu1_u_fs & VU1_UD { }
-VU1_UFT: vu1_u_ft^VU1_UD is vu1_u_ft & VU1_UD { }
-VU1_UACC: "acc"^VU1_UD is VU1_UD { }
+VU1_UFD: vu1_u_fd^vu1_u_destn is vu1_u_fd & vu1_u_destn { }
+VU1_UFS: vu1_u_fs^vu1_u_destn is vu1_u_fs & vu1_u_destn { }
+VU1_UFT: vu1_u_ft^vu1_u_destn is vu1_u_ft & vu1_u_destn { }
+VU1_UACC: "acc"^vu1_u_destn is vu1_u_destn { }
 VU1_UBCR: vu1_u_ft^VU1_UBC is vu1_u_ft & VU1_UBC { }
-VU1_LFT: vu1_l_ft^VU1_LD is vu1_l_ft & VU1_LD { }
-VU1_LFS: vu1_l_fs^VU1_LD is vu1_l_fs & VU1_LD { }
+VU1_LFT: vu1_l_ft^vu1_l_destn is vu1_l_ft & vu1_l_destn { }
+VU1_LFS: vu1_l_fs^vu1_l_destn is vu1_l_fs & vu1_l_destn { }
 VU1_IT: vu1_l_it is vu1_l_it { }
 VU1_IS: vu1_l_is is vu1_l_is { }
 VU1_ID: vu1_l_id is vu1_l_id { }
@@ -2883,7 +2737,7 @@ VU1_CSTW: is vu1_l_dw=0 { }
 VU1_CSTW: is vu1_l_dw=1 { *[ram]:4 (vu1_tr_ea + 12) = vu1_tr_w; }
 
 # Upper instructions. The vu1_u_res bits are always clear.
-VU1_UPPER: "add"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "add"^VU1_UBC^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_us_x f+ VU1_UBCV;
 	local r_y:4 = vu1_us_y f+ VU1_UBCV;
 	local r_z:4 = vu1_us_z f+ VU1_UBCV;
@@ -2913,7 +2767,7 @@ VU1_UPPER: "add"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is v
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "sub"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=1 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "sub"^VU1_UBC^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=1 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_us_x f- VU1_UBCV;
 	local r_y:4 = vu1_us_y f- VU1_UBCV;
 	local r_z:4 = vu1_us_z f- VU1_UBCV;
@@ -2943,7 +2797,7 @@ VU1_UPPER: "sub"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is v
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "madd"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=2 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "madd"^VU1_UBC^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=2 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_acc_x f+ (vu1_us_x f* VU1_UBCV);
 	local r_y:4 = vu1_acc_y f+ (vu1_us_y f* VU1_UBCV);
 	local r_z:4 = vu1_acc_z f+ (vu1_us_z f* VU1_UBCV);
@@ -2973,7 +2827,7 @@ VU1_UPPER: "madd"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is 
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "msub"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=3 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "msub"^VU1_UBC^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=3 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_acc_x f- (vu1_us_x f* VU1_UBCV);
 	local r_y:4 = vu1_acc_y f- (vu1_us_y f* VU1_UBCV);
 	local r_z:4 = vu1_acc_z f- (vu1_us_z f* VU1_UBCV);
@@ -3003,7 +2857,7 @@ VU1_UPPER: "msub"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is 
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "max"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=4 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UFD & VU1_UFS {
+VU1_UPPER: "max"^VU1_UBC^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=4 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UFD & VU1_UFS {
 	local m_x:4 = vu1_us_x;
 	if (!(VU1_UBCV f> vu1_us_x)) goto <m_x_keep>;
 	m_x = VU1_UBCV;
@@ -3037,7 +2891,7 @@ VU1_UPPER: "max"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is v
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "mini"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=5 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UFD & VU1_UFS {
+VU1_UPPER: "mini"^VU1_UBC^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=5 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UFD & VU1_UFS {
 	local m_x:4 = vu1_us_x;
 	if (!(VU1_UBCV f< vu1_us_x)) goto <m_x_keep>;
 	m_x = VU1_UBCV;
@@ -3071,7 +2925,7 @@ VU1_UPPER: "mini"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is 
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "mul"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=6 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "mul"^VU1_UBC^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UBCR is vu1_u_op4=6 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_us_x f* VU1_UBCV;
 	local r_y:4 = vu1_us_y f* VU1_UBCV;
 	local r_z:4 = vu1_us_z f* VU1_UBCV;
@@ -3101,7 +2955,7 @@ VU1_UPPER: "mul"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UBCR is v
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "mulq"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x1c & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "mulq"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x1c & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_us_x f* vu1_uq;
 	local r_y:4 = vu1_us_y f* vu1_uq;
 	local r_z:4 = vu1_us_z f* vu1_uq;
@@ -3131,7 +2985,7 @@ VU1_UPPER: "mulq"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x1c &
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "maxi"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x1d & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UFD & VU1_UFS {
+VU1_UPPER: "maxi"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x1d & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UFD & VU1_UFS {
 	local m_x:4 = vu1_us_x;
 	if (!(vu1_ui f> vu1_us_x)) goto <m_x_keep>;
 	m_x = vu1_ui;
@@ -3165,7 +3019,7 @@ VU1_UPPER: "maxi"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x1d &
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "muli"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x1e & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "muli"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x1e & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_us_x f* vu1_ui;
 	local r_y:4 = vu1_us_y f* vu1_ui;
 	local r_z:4 = vu1_us_z f* vu1_ui;
@@ -3195,7 +3049,7 @@ VU1_UPPER: "muli"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x1e &
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "minii"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x1f & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UFD & VU1_UFS {
+VU1_UPPER: "minii"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x1f & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UFD & VU1_UFS {
 	local m_x:4 = vu1_us_x;
 	if (!(vu1_ui f< vu1_us_x)) goto <m_x_keep>;
 	m_x = vu1_ui;
@@ -3229,7 +3083,7 @@ VU1_UPPER: "minii"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x1f 
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "addq"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x20 & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "addq"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x20 & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_us_x f+ vu1_uq;
 	local r_y:4 = vu1_us_y f+ vu1_uq;
 	local r_z:4 = vu1_us_z f+ vu1_uq;
@@ -3259,7 +3113,7 @@ VU1_UPPER: "addq"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x20 &
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "maddq"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x21 & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "maddq"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x21 & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_acc_x f+ (vu1_us_x f* vu1_uq);
 	local r_y:4 = vu1_acc_y f+ (vu1_us_y f* vu1_uq);
 	local r_z:4 = vu1_acc_z f+ (vu1_us_z f* vu1_uq);
@@ -3289,7 +3143,7 @@ VU1_UPPER: "maddq"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x21 
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "addi"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x22 & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "addi"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x22 & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_us_x f+ vu1_ui;
 	local r_y:4 = vu1_us_y f+ vu1_ui;
 	local r_z:4 = vu1_us_z f+ vu1_ui;
@@ -3319,7 +3173,7 @@ VU1_UPPER: "addi"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x22 &
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "maddi"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x23 & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "maddi"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x23 & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_acc_x f+ (vu1_us_x f* vu1_ui);
 	local r_y:4 = vu1_acc_y f+ (vu1_us_y f* vu1_ui);
 	local r_z:4 = vu1_acc_z f+ (vu1_us_z f* vu1_ui);
@@ -3349,7 +3203,7 @@ VU1_UPPER: "maddi"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x23 
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "subq"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x24 & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "subq"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x24 & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_us_x f- vu1_uq;
 	local r_y:4 = vu1_us_y f- vu1_uq;
 	local r_z:4 = vu1_us_z f- vu1_uq;
@@ -3379,7 +3233,7 @@ VU1_UPPER: "subq"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x24 &
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "msubq"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x25 & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "msubq"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x25 & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_acc_x f- (vu1_us_x f* vu1_uq);
 	local r_y:4 = vu1_acc_y f- (vu1_us_y f* vu1_uq);
 	local r_z:4 = vu1_acc_z f- (vu1_us_z f* vu1_uq);
@@ -3409,7 +3263,7 @@ VU1_UPPER: "msubq"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",q" is vu1_u_op6=0x25 
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "subi"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x26 & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "subi"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x26 & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_us_x f- vu1_ui;
 	local r_y:4 = vu1_us_y f- vu1_ui;
 	local r_z:4 = vu1_us_z f- vu1_ui;
@@ -3439,7 +3293,7 @@ VU1_UPPER: "subi"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x26 &
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "msubi"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x27 & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
+VU1_UPPER: "msubi"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x27 & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS {
 	local r_x:4 = vu1_acc_x f- (vu1_us_x f* vu1_ui);
 	local r_y:4 = vu1_acc_y f- (vu1_us_y f* vu1_ui);
 	local r_z:4 = vu1_acc_z f- (vu1_us_z f* vu1_ui);
@@ -3469,7 +3323,7 @@ VU1_UPPER: "msubi"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^",i" is vu1_u_op6=0x27 
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "add"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x28 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS & VU1_UFT {
+VU1_UPPER: "add"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x28 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS & VU1_UFT {
 	local r_x:4 = vu1_us_x f+ vu1_ut_x;
 	local r_y:4 = vu1_us_y f+ vu1_ut_y;
 	local r_z:4 = vu1_us_z f+ vu1_ut_z;
@@ -3499,7 +3353,7 @@ VU1_UPPER: "add"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "madd"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x29 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS & VU1_UFT {
+VU1_UPPER: "madd"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x29 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS & VU1_UFT {
 	local r_x:4 = vu1_acc_x f+ (vu1_us_x f* vu1_ut_x);
 	local r_y:4 = vu1_acc_y f+ (vu1_us_y f* vu1_ut_y);
 	local r_z:4 = vu1_acc_z f+ (vu1_us_z f* vu1_ut_z);
@@ -3529,7 +3383,7 @@ VU1_UPPER: "madd"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "mul"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x2a & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS & VU1_UFT {
+VU1_UPPER: "mul"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x2a & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS & VU1_UFT {
 	local r_x:4 = vu1_us_x f* vu1_ut_x;
 	local r_y:4 = vu1_us_y f* vu1_ut_y;
 	local r_z:4 = vu1_us_z f* vu1_ut_z;
@@ -3559,7 +3413,7 @@ VU1_UPPER: "mul"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "max"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x2b & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UFD & VU1_UFS & VU1_UFT {
+VU1_UPPER: "max"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x2b & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UFD & VU1_UFS & VU1_UFT {
 	local m_x:4 = vu1_us_x;
 	if (!(vu1_ut_x f> vu1_us_x)) goto <m_x_keep>;
 	m_x = vu1_ut_x;
@@ -3593,7 +3447,7 @@ VU1_UPPER: "max"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "sub"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x2c & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS & VU1_UFT {
+VU1_UPPER: "sub"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x2c & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS & VU1_UFT {
 	local r_x:4 = vu1_us_x f- vu1_ut_x;
 	local r_y:4 = vu1_us_y f- vu1_ut_y;
 	local r_z:4 = vu1_us_z f- vu1_ut_z;
@@ -3623,7 +3477,7 @@ VU1_UPPER: "sub"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "msub"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x2d & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS & VU1_UFT {
+VU1_UPPER: "msub"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x2d & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS & VU1_UFT {
 	local r_x:4 = vu1_acc_x f- (vu1_us_x f* vu1_ut_x);
 	local r_y:4 = vu1_acc_y f- (vu1_us_y f* vu1_ut_y);
 	local r_z:4 = vu1_acc_z f- (vu1_us_z f* vu1_ut_z);
@@ -3653,7 +3507,7 @@ VU1_UPPER: "msub"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "mini"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x2f & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UFD & VU1_UFS & VU1_UFT {
+VU1_UPPER: "mini"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x2f & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDW & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UFD & VU1_UFS & VU1_UFT {
 	local m_x:4 = vu1_us_x;
 	if (!(vu1_ut_x f< vu1_us_x)) goto <m_x_keep>;
 	m_x = vu1_ut_x;
@@ -3687,7 +3541,7 @@ VU1_UPPER: "mini"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6
 	build VU1_CUFDZ;
 	build VU1_CUFDW;
 }
-VU1_UPPER: "adda"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UBCR is vu1_u_op6>=0x3c & vu1_u_fd=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "adda"^VU1_UBC^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^","^VU1_UBCR is vu1_u_op6>=0x3c & vu1_u_fd=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_us_x f+ VU1_UBCV;
 	local r_y:4 = vu1_us_y f+ VU1_UBCV;
 	local r_z:4 = vu1_us_z f+ VU1_UBCV;
@@ -3717,7 +3571,7 @@ VU1_UPPER: "adda"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UBCR is
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "suba"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UBCR is vu1_u_op6>=0x3c & vu1_u_fd=1 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "suba"^VU1_UBC^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^","^VU1_UBCR is vu1_u_op6>=0x3c & vu1_u_fd=1 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_us_x f- VU1_UBCV;
 	local r_y:4 = vu1_us_y f- VU1_UBCV;
 	local r_z:4 = vu1_us_z f- VU1_UBCV;
@@ -3747,7 +3601,7 @@ VU1_UPPER: "suba"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UBCR is
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "madda"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UBCR is vu1_u_op6>=0x3c & vu1_u_fd=2 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "madda"^VU1_UBC^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^","^VU1_UBCR is vu1_u_op6>=0x3c & vu1_u_fd=2 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_acc_x f+ (vu1_us_x f* VU1_UBCV);
 	local r_y:4 = vu1_acc_y f+ (vu1_us_y f* VU1_UBCV);
 	local r_z:4 = vu1_acc_z f+ (vu1_us_z f* VU1_UBCV);
@@ -3777,7 +3631,7 @@ VU1_UPPER: "madda"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UBCR i
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "msuba"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UBCR is vu1_u_op6>=0x3c & vu1_u_fd=3 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "msuba"^VU1_UBC^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^","^VU1_UBCR is vu1_u_op6>=0x3c & vu1_u_fd=3 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_acc_x f- (vu1_us_x f* VU1_UBCV);
 	local r_y:4 = vu1_acc_y f- (vu1_us_y f* VU1_UBCV);
 	local r_z:4 = vu1_acc_z f- (vu1_us_z f* VU1_UBCV);
@@ -3807,7 +3661,7 @@ VU1_UPPER: "msuba"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UBCR i
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "mula"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UBCR is vu1_u_op6>=0x3c & vu1_u_fd=6 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "mula"^VU1_UBC^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^","^VU1_UBCR is vu1_u_op6>=0x3c & vu1_u_fd=6 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UBC & VU1_UBCR & VU1_UBCV & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_us_x f* VU1_UBCV;
 	local r_y:4 = vu1_us_y f* VU1_UBCV;
 	local r_z:4 = vu1_us_z f* VU1_UBCV;
@@ -3837,7 +3691,7 @@ VU1_UPPER: "mula"^VU1_UBC^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UBCR is
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "mulaq"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x1fc & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "mulaq"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x1fc & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_us_x f* vu1_uq;
 	local r_y:4 = vu1_us_y f* vu1_uq;
 	local r_z:4 = vu1_us_z f* vu1_uq;
@@ -3867,7 +3721,7 @@ VU1_UPPER: "mulaq"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x1
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "mulai"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x1fe & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "mulai"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x1fe & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_us_x f* vu1_ui;
 	local r_y:4 = vu1_us_y f* vu1_ui;
 	local r_z:4 = vu1_us_z f* vu1_ui;
@@ -3897,7 +3751,7 @@ VU1_UPPER: "mulai"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x1
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "addaq"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x23c & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "addaq"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x23c & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_us_x f+ vu1_uq;
 	local r_y:4 = vu1_us_y f+ vu1_uq;
 	local r_z:4 = vu1_us_z f+ vu1_uq;
@@ -3927,7 +3781,7 @@ VU1_UPPER: "addaq"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x2
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "maddaq"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x23d & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "maddaq"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x23d & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_acc_x f+ (vu1_us_x f* vu1_uq);
 	local r_y:4 = vu1_acc_y f+ (vu1_us_y f* vu1_uq);
 	local r_z:4 = vu1_acc_z f+ (vu1_us_z f* vu1_uq);
@@ -3957,7 +3811,7 @@ VU1_UPPER: "maddaq"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "addai"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x23e & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "addai"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x23e & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_us_x f+ vu1_ui;
 	local r_y:4 = vu1_us_y f+ vu1_ui;
 	local r_z:4 = vu1_us_z f+ vu1_ui;
@@ -3987,7 +3841,7 @@ VU1_UPPER: "addai"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x2
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "maddai"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x23f & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "maddai"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x23f & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_acc_x f+ (vu1_us_x f* vu1_ui);
 	local r_y:4 = vu1_acc_y f+ (vu1_us_y f* vu1_ui);
 	local r_z:4 = vu1_acc_z f+ (vu1_us_z f* vu1_ui);
@@ -4017,7 +3871,7 @@ VU1_UPPER: "maddai"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "subaq"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x27c & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "subaq"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x27c & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_us_x f- vu1_uq;
 	local r_y:4 = vu1_us_y f- vu1_uq;
 	local r_z:4 = vu1_us_z f- vu1_uq;
@@ -4047,7 +3901,7 @@ VU1_UPPER: "subaq"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x2
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "msubaq"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x27d & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "msubaq"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x27d & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_acc_x f- (vu1_us_x f* vu1_uq);
 	local r_y:4 = vu1_acc_y f- (vu1_us_y f* vu1_uq);
 	local r_z:4 = vu1_acc_z f- (vu1_us_z f* vu1_uq);
@@ -4077,7 +3931,7 @@ VU1_UPPER: "msubaq"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",q" is vu1_u_op11=0x
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "subai"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x27e & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "subai"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x27e & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_us_x f- vu1_ui;
 	local r_y:4 = vu1_us_y f- vu1_ui;
 	local r_z:4 = vu1_us_z f- vu1_ui;
@@ -4107,7 +3961,7 @@ VU1_UPPER: "subai"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x2
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "msubai"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x27f & vu1_u_ft=0 & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
+VU1_UPPER: "msubai"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x27f & vu1_u_ft=0 & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS {
 	local r_x:4 = vu1_acc_x f- (vu1_us_x f* vu1_ui);
 	local r_y:4 = vu1_acc_y f- (vu1_us_y f* vu1_ui);
 	local r_z:4 = vu1_acc_z f- (vu1_us_z f* vu1_ui);
@@ -4137,7 +3991,7 @@ VU1_UPPER: "msubai"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^",i" is vu1_u_op11=0x
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "adda"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op11=0x2bc & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS & VU1_UFT {
+VU1_UPPER: "adda"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op11=0x2bc & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS & VU1_UFT {
 	local r_x:4 = vu1_us_x f+ vu1_ut_x;
 	local r_y:4 = vu1_us_y f+ vu1_ut_y;
 	local r_z:4 = vu1_us_z f+ vu1_ut_z;
@@ -4167,7 +4021,7 @@ VU1_UPPER: "adda"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "madda"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op11=0x2bd & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS & VU1_UFT {
+VU1_UPPER: "madda"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op11=0x2bd & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS & VU1_UFT {
 	local r_x:4 = vu1_acc_x f+ (vu1_us_x f* vu1_ut_x);
 	local r_y:4 = vu1_acc_y f+ (vu1_us_y f* vu1_ut_y);
 	local r_z:4 = vu1_acc_z f+ (vu1_us_z f* vu1_ut_z);
@@ -4197,7 +4051,7 @@ VU1_UPPER: "madda"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_o
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "mula"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op11=0x2be & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS & VU1_UFT {
+VU1_UPPER: "mula"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op11=0x2be & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS & VU1_UFT {
 	local r_x:4 = vu1_us_x f* vu1_ut_x;
 	local r_y:4 = vu1_us_y f* vu1_ut_y;
 	local r_z:4 = vu1_us_z f* vu1_ut_z;
@@ -4227,7 +4081,7 @@ VU1_UPPER: "mula"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "suba"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op11=0x2fc & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS & VU1_UFT {
+VU1_UPPER: "suba"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op11=0x2fc & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS & VU1_UFT {
 	local r_x:4 = vu1_us_x f- vu1_ut_x;
 	local r_y:4 = vu1_us_y f- vu1_ut_y;
 	local r_z:4 = vu1_us_z f- vu1_ut_z;
@@ -4257,7 +4111,7 @@ VU1_UPPER: "suba"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "msuba"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op11=0x2fd & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS & VU1_UFT {
+VU1_UPPER: "msuba"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op11=0x2fd & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCW & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS & VU1_UFT {
 	local r_x:4 = vu1_acc_x f- (vu1_us_x f* vu1_ut_x);
 	local r_y:4 = vu1_acc_y f- (vu1_us_y f* vu1_ut_y);
 	local r_z:4 = vu1_acc_z f- (vu1_us_z f* vu1_ut_z);
@@ -4287,7 +4141,7 @@ VU1_UPPER: "msuba"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_o
 	build VU1_CACCZ;
 	build VU1_CACCW;
 }
-VU1_UPPER: "opmula"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op11=0x2fe & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS & VU1_UFT {
+VU1_UPPER: "opmula"^vu1_u_flagsn^"."^vu1_u_destn VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_op11=0x2fe & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CACCX & VU1_CACCY & VU1_CACCZ & VU1_UACC & VU1_UDMASK & VU1_UFS & VU1_UFT {
 	local r_x:4 = vu1_us_y f* vu1_ut_z;
 	local r_y:4 = vu1_us_z f* vu1_ut_x;
 	local r_z:4 = vu1_us_x f* vu1_ut_y;
@@ -4311,7 +4165,7 @@ VU1_UPPER: "opmula"^VU1_UF^"."^VU1_UD VU1_UACC^","^VU1_UFS^","^VU1_UFT is vu1_u_
 	build VU1_CACCY;
 	build VU1_CACCZ;
 }
-VU1_UPPER: "opmsub"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x2e & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS & VU1_UFT {
+VU1_UPPER: "opmsub"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_op6=0x2e & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFDX & VU1_CUFDY & VU1_CUFDZ & VU1_UDMASK & VU1_UFD & VU1_UFS & VU1_UFT {
 	local r_x:4 = vu1_acc_x f- (vu1_us_y f* vu1_ut_z);
 	local r_y:4 = vu1_acc_y f- (vu1_us_z f* vu1_ut_x);
 	local r_z:4 = vu1_acc_z f- (vu1_us_x f* vu1_ut_y);
@@ -4335,7 +4189,7 @@ VU1_UPPER: "opmsub"^VU1_UF^"."^VU1_UD VU1_UFD^","^VU1_UFS^","^VU1_UFT is vu1_u_o
 	build VU1_CUFDY;
 	build VU1_CUFDZ;
 }
-VU1_UPPER: "abs"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x1fd & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
+VU1_UPPER: "abs"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFT^","^VU1_UFS is vu1_u_op11=0x1fd & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
 	vu1_tr_x = abs(vu1_us_x);
 	vu1_tr_y = abs(vu1_us_y);
 	vu1_tr_z = abs(vu1_us_z);
@@ -4345,7 +4199,7 @@ VU1_UPPER: "abs"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x1fd & vu1
 	build VU1_CUFTZ;
 	build VU1_CUFTW;
 }
-VU1_UPPER: "itof0"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x13c & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
+VU1_UPPER: "itof0"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFT^","^VU1_UFS is vu1_u_op11=0x13c & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
 	vu1_tr_x = int2float(vu1_us_x) f/ int2float(1:4);
 	vu1_tr_y = int2float(vu1_us_y) f/ int2float(1:4);
 	vu1_tr_z = int2float(vu1_us_z) f/ int2float(1:4);
@@ -4355,7 +4209,7 @@ VU1_UPPER: "itof0"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x13c & v
 	build VU1_CUFTZ;
 	build VU1_CUFTW;
 }
-VU1_UPPER: "ftoi0"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x17c & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
+VU1_UPPER: "ftoi0"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFT^","^VU1_UFS is vu1_u_op11=0x17c & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
 	vu1_tr_x = trunc(vu1_us_x f* int2float(1:4));
 	vu1_tr_y = trunc(vu1_us_y f* int2float(1:4));
 	vu1_tr_z = trunc(vu1_us_z f* int2float(1:4));
@@ -4365,7 +4219,7 @@ VU1_UPPER: "ftoi0"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x17c & v
 	build VU1_CUFTZ;
 	build VU1_CUFTW;
 }
-VU1_UPPER: "itof4"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x13d & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
+VU1_UPPER: "itof4"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFT^","^VU1_UFS is vu1_u_op11=0x13d & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
 	vu1_tr_x = int2float(vu1_us_x) f/ int2float(16:4);
 	vu1_tr_y = int2float(vu1_us_y) f/ int2float(16:4);
 	vu1_tr_z = int2float(vu1_us_z) f/ int2float(16:4);
@@ -4375,7 +4229,7 @@ VU1_UPPER: "itof4"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x13d & v
 	build VU1_CUFTZ;
 	build VU1_CUFTW;
 }
-VU1_UPPER: "ftoi4"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x17d & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
+VU1_UPPER: "ftoi4"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFT^","^VU1_UFS is vu1_u_op11=0x17d & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
 	vu1_tr_x = trunc(vu1_us_x f* int2float(16:4));
 	vu1_tr_y = trunc(vu1_us_y f* int2float(16:4));
 	vu1_tr_z = trunc(vu1_us_z f* int2float(16:4));
@@ -4385,7 +4239,7 @@ VU1_UPPER: "ftoi4"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x17d & v
 	build VU1_CUFTZ;
 	build VU1_CUFTW;
 }
-VU1_UPPER: "itof12"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x13e & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
+VU1_UPPER: "itof12"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFT^","^VU1_UFS is vu1_u_op11=0x13e & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
 	vu1_tr_x = int2float(vu1_us_x) f/ int2float(4096:4);
 	vu1_tr_y = int2float(vu1_us_y) f/ int2float(4096:4);
 	vu1_tr_z = int2float(vu1_us_z) f/ int2float(4096:4);
@@ -4395,7 +4249,7 @@ VU1_UPPER: "itof12"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x13e & 
 	build VU1_CUFTZ;
 	build VU1_CUFTW;
 }
-VU1_UPPER: "ftoi12"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x17e & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
+VU1_UPPER: "ftoi12"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFT^","^VU1_UFS is vu1_u_op11=0x17e & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
 	vu1_tr_x = trunc(vu1_us_x f* int2float(4096:4));
 	vu1_tr_y = trunc(vu1_us_y f* int2float(4096:4));
 	vu1_tr_z = trunc(vu1_us_z f* int2float(4096:4));
@@ -4405,7 +4259,7 @@ VU1_UPPER: "ftoi12"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x17e & 
 	build VU1_CUFTZ;
 	build VU1_CUFTW;
 }
-VU1_UPPER: "itof15"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x13f & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
+VU1_UPPER: "itof15"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFT^","^VU1_UFS is vu1_u_op11=0x13f & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
 	vu1_tr_x = int2float(vu1_us_x) f/ int2float(32768:4);
 	vu1_tr_y = int2float(vu1_us_y) f/ int2float(32768:4);
 	vu1_tr_z = int2float(vu1_us_z) f/ int2float(32768:4);
@@ -4415,7 +4269,7 @@ VU1_UPPER: "itof15"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x13f & 
 	build VU1_CUFTZ;
 	build VU1_CUFTW;
 }
-VU1_UPPER: "ftoi15"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x17f & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
+VU1_UPPER: "ftoi15"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFT^","^VU1_UFS is vu1_u_op11=0x17f & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_CUFTW & VU1_CUFTX & VU1_CUFTY & VU1_CUFTZ & VU1_UFS & VU1_UFT {
 	vu1_tr_x = trunc(vu1_us_x f* int2float(32768:4));
 	vu1_tr_y = trunc(vu1_us_y f* int2float(32768:4));
 	vu1_tr_z = trunc(vu1_us_z f* int2float(32768:4));
@@ -4425,7 +4279,7 @@ VU1_UPPER: "ftoi15"^VU1_UF^"."^VU1_UD VU1_UFT^","^VU1_UFS is vu1_u_op11=0x17f & 
 	build VU1_CUFTZ;
 	build VU1_CUFTW;
 }
-VU1_UPPER: "clipw"^VU1_UF^"."^VU1_UD VU1_UFS^","^vu1_u_ft^"w" is vu1_u_op11=0x1ff & vu1_u_dest=0xe & vu1_u_res=0 & VU1_UF & VU1_UD & VU1_UFS & vu1_u_ft {
+VU1_UPPER: "clipw"^vu1_u_flagsn^"."^vu1_u_destn VU1_UFS^","^vu1_u_ft^"w" is vu1_u_op11=0x1ff & vu1_u_dest=0xe & vu1_u_res=0 & vu1_u_flagsn & vu1_u_destn & VU1_UFS & vu1_u_ft {
 	local lim:4 = abs(vu1_ut_w);
 	local bits:4 = 0;
 	bits = bits | (zext(vu1_us_x f> lim) << 0);
@@ -4436,12 +4290,12 @@ VU1_UPPER: "clipw"^VU1_UF^"."^VU1_UD VU1_UFS^","^vu1_u_ft^"w" is vu1_u_op11=0x1f
 	bits = bits | (zext(vu1_us_z f< f- lim) << 5);
 	vu1_clip = ((vu1_clip << 6) | bits) & 0xffffff;
 }
-VU1_UPPER: "nop"^VU1_UF is vu1_u_op11=0x2ff & vu1_u_res=0 & vu1_u_dest=0 & vu1_u_ft=0 & vu1_u_fs=0 & VU1_UF { }
+VU1_UPPER: "nop"^vu1_u_flagsn is vu1_u_op11=0x2ff & vu1_u_res=0 & vu1_u_dest=0 & vu1_u_ft=0 & vu1_u_fs=0 & vu1_u_flagsn { }
 # The reference decodes each half on its own and shows an invalid half as *unknown*.
 VU1_UPPER: "*unknown*" is vu1_u_word { }
 
 # Lower instructions.
-VU1_LOWER: "lq."^VU1_LD VU1_LFT^","^vu1_l_imm11^"("^VU1_IS^")" is vu1_l_op7=0x0 & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_IS & VU1_LD & VU1_LFT & VU1_RIS & vu1_l_imm11 {
+VU1_LOWER: "lq."^vu1_l_destn VU1_LFT^","^vu1_l_imm11^"("^VU1_IS^")" is vu1_l_op7=0x0 & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_IS & vu1_l_destn & VU1_LFT & VU1_RIS & vu1_l_imm11 {
 	local qa:2 = (VU1_RIS + vu1_l_imm11) & 0x3ff;
 	vu1_tr_ea = 0x1100c000 + zext(qa) * 16;
 	vu1_tr_x = *[ram]:4 (vu1_tr_ea + 0);
@@ -4453,7 +4307,7 @@ VU1_LOWER: "lq."^VU1_LD VU1_LFT^","^vu1_l_imm11^"("^VU1_IS^")" is vu1_l_op7=0x0 
 	build VU1_CLFTZ;
 	build VU1_CLFTW;
 }
-VU1_LOWER: "sq."^VU1_LD VU1_LFS^","^vu1_l_imm11^"("^VU1_IT^")" is vu1_l_op7=0x1 & VU1_CSTW & VU1_CSTX & VU1_CSTY & VU1_CSTZ & VU1_IT & VU1_LD & VU1_LFS & VU1_RIT & VU1_RLFSW & VU1_RLFSX & VU1_RLFSY & VU1_RLFSZ & vu1_l_imm11 {
+VU1_LOWER: "sq."^vu1_l_destn VU1_LFS^","^vu1_l_imm11^"("^VU1_IT^")" is vu1_l_op7=0x1 & VU1_CSTW & VU1_CSTX & VU1_CSTY & VU1_CSTZ & VU1_IT & vu1_l_destn & VU1_LFS & VU1_RIT & VU1_RLFSW & VU1_RLFSX & VU1_RLFSY & VU1_RLFSZ & vu1_l_imm11 {
 	local qa:2 = (VU1_RIT + vu1_l_imm11) & 0x3ff;
 	vu1_tr_ea = 0x1100c000 + zext(qa) * 16;
 	vu1_tr_x = VU1_RLFSX;
@@ -4465,12 +4319,12 @@ VU1_LOWER: "sq."^VU1_LD VU1_LFS^","^vu1_l_imm11^"("^VU1_IT^")" is vu1_l_op7=0x1 
 	build VU1_CSTZ;
 	build VU1_CSTW;
 }
-VU1_LOWER: "ilw."^VU1_LD VU1_IT^","^vu1_l_imm11^"("^VU1_IS^")"^VU1_LD2 is vu1_l_op7=0x4 & VU1_CILW & VU1_IS & VU1_IT & VU1_LD & VU1_LD2 & VU1_RIS & vu1_l_imm11 {
+VU1_LOWER: "ilw."^vu1_l_destn VU1_IT^","^vu1_l_imm11^"("^VU1_IS^")"^vu1_l_destn2 is vu1_l_op7=0x4 & VU1_CILW & VU1_IS & VU1_IT & vu1_l_destn & vu1_l_destn2 & VU1_RIS & vu1_l_imm11 {
 	local qa:2 = (VU1_RIS + vu1_l_imm11) & 0x3ff;
 	vu1_tr_ea = 0x1100c000 + zext(qa) * 16;
 	build VU1_CILW;
 }
-VU1_LOWER: "isw."^VU1_LD VU1_IT^","^vu1_l_imm11^"("^VU1_IS^")"^VU1_LD2 is vu1_l_op7=0x5 & VU1_CSTW & VU1_CSTX & VU1_CSTY & VU1_CSTZ & VU1_IS & VU1_IT & VU1_LD & VU1_LD2 & VU1_RIS & VU1_RIT & vu1_l_imm11 {
+VU1_LOWER: "isw."^vu1_l_destn VU1_IT^","^vu1_l_imm11^"("^VU1_IS^")"^vu1_l_destn2 is vu1_l_op7=0x5 & VU1_CSTW & VU1_CSTX & VU1_CSTY & VU1_CSTZ & VU1_IS & VU1_IT & vu1_l_destn & vu1_l_destn2 & VU1_RIS & VU1_RIT & vu1_l_imm11 {
 	local qa:2 = (VU1_RIS + vu1_l_imm11) & 0x3ff;
 	vu1_tr_ea = 0x1100c000 + zext(qa) * 16;
 	vu1_tr_x = zext(VU1_RIT);
@@ -4539,7 +4393,7 @@ VU1_LOWER: "iand" VU1_ID^","^VU1_IS^","^VU1_IT is vu1_l_op7=0x40 & vu1_l_op6=0x3
 VU1_LOWER: "ior" VU1_ID^","^VU1_IS^","^VU1_IT is vu1_l_op7=0x40 & vu1_l_op6=0x35 & VU1_ID & VU1_IS & VU1_IT & VU1_RIS & VU1_RIT & VU1_WID & vu1_l_dest=0 {
 	VU1_WID = VU1_RIS | VU1_RIT;
 }
-VU1_LOWER: "move."^VU1_LD VU1_LFT^","^VU1_LFS is vu1_l_op7=0x40 & vu1_l_op11=0x33c & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_LD & VU1_LFS & VU1_LFT & VU1_RLFSW & VU1_RLFSX & VU1_RLFSY & VU1_RLFSZ {
+VU1_LOWER: "move."^vu1_l_destn VU1_LFT^","^VU1_LFS is vu1_l_op7=0x40 & vu1_l_op11=0x33c & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & vu1_l_destn & VU1_LFS & VU1_LFT & VU1_RLFSW & VU1_RLFSX & VU1_RLFSY & VU1_RLFSZ {
 	local r_x:4 = VU1_RLFSX;
 	local r_y:4 = VU1_RLFSY;
 	local r_z:4 = VU1_RLFSZ;
@@ -4553,7 +4407,7 @@ VU1_LOWER: "move."^VU1_LD VU1_LFT^","^VU1_LFS is vu1_l_op7=0x40 & vu1_l_op11=0x3
 	build VU1_CLFTZ;
 	build VU1_CLFTW;
 }
-VU1_LOWER: "mr32."^VU1_LD VU1_LFT^","^VU1_LFS is vu1_l_op7=0x40 & vu1_l_op11=0x33d & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_LD & VU1_LFS & VU1_LFT & VU1_RLFSW & VU1_RLFSX & VU1_RLFSY & VU1_RLFSZ {
+VU1_LOWER: "mr32."^vu1_l_destn VU1_LFT^","^VU1_LFS is vu1_l_op7=0x40 & vu1_l_op11=0x33d & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & vu1_l_destn & VU1_LFS & VU1_LFT & VU1_RLFSW & VU1_RLFSX & VU1_RLFSY & VU1_RLFSZ {
 	local r_x:4 = VU1_RLFSY;
 	local r_y:4 = VU1_RLFSZ;
 	local r_z:4 = VU1_RLFSW;
@@ -4567,7 +4421,7 @@ VU1_LOWER: "mr32."^VU1_LD VU1_LFT^","^VU1_LFS is vu1_l_op7=0x40 & vu1_l_op11=0x3
 	build VU1_CLFTZ;
 	build VU1_CLFTW;
 }
-VU1_LOWER: "lqi."^VU1_LD VU1_LFT^",("^VU1_IS^"++)" is vu1_l_op7=0x40 & vu1_l_op11=0x37c & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_IS & VU1_LD & VU1_LFT & VU1_RIS & VU1_WIS {
+VU1_LOWER: "lqi."^vu1_l_destn VU1_LFT^",("^VU1_IS^"++)" is vu1_l_op7=0x40 & vu1_l_op11=0x37c & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_IS & vu1_l_destn & VU1_LFT & VU1_RIS & VU1_WIS {
 	local qa:2 = (VU1_RIS) & 0x3ff;
 	vu1_tr_ea = 0x1100c000 + zext(qa) * 16;
 	vu1_tr_x = *[ram]:4 (vu1_tr_ea + 0);
@@ -4580,7 +4434,7 @@ VU1_LOWER: "lqi."^VU1_LD VU1_LFT^",("^VU1_IS^"++)" is vu1_l_op7=0x40 & vu1_l_op1
 	build VU1_CLFTW;
 	VU1_WIS = VU1_RIS + 1;
 }
-VU1_LOWER: "sqi."^VU1_LD VU1_LFS^",("^VU1_IT^"++)" is vu1_l_op7=0x40 & vu1_l_op11=0x37d & VU1_CSTW & VU1_CSTX & VU1_CSTY & VU1_CSTZ & VU1_IT & VU1_LD & VU1_LFS & VU1_RIT & VU1_RLFSW & VU1_RLFSX & VU1_RLFSY & VU1_RLFSZ & VU1_WIT {
+VU1_LOWER: "sqi."^vu1_l_destn VU1_LFS^",("^VU1_IT^"++)" is vu1_l_op7=0x40 & vu1_l_op11=0x37d & VU1_CSTW & VU1_CSTX & VU1_CSTY & VU1_CSTZ & VU1_IT & vu1_l_destn & VU1_LFS & VU1_RIT & VU1_RLFSW & VU1_RLFSX & VU1_RLFSY & VU1_RLFSZ & VU1_WIT {
 	local qa:2 = (VU1_RIT) & 0x3ff;
 	vu1_tr_ea = 0x1100c000 + zext(qa) * 16;
 	vu1_tr_x = VU1_RLFSX;
@@ -4593,7 +4447,7 @@ VU1_LOWER: "sqi."^VU1_LD VU1_LFS^",("^VU1_IT^"++)" is vu1_l_op7=0x40 & vu1_l_op1
 	build VU1_CSTW;
 	VU1_WIT = VU1_RIT + 1;
 }
-VU1_LOWER: "lqd."^VU1_LD VU1_LFT^",(--"^VU1_IS^")" is vu1_l_op7=0x40 & vu1_l_op11=0x37e & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_IS & VU1_LD & VU1_LFT & VU1_RIS & VU1_WIS {
+VU1_LOWER: "lqd."^vu1_l_destn VU1_LFT^",(--"^VU1_IS^")" is vu1_l_op7=0x40 & vu1_l_op11=0x37e & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_IS & vu1_l_destn & VU1_LFT & VU1_RIS & VU1_WIS {
 	local dec:2 = VU1_RIS - 1;
 	VU1_WIS = dec;
 	local qa:2 = (dec) & 0x3ff;
@@ -4607,7 +4461,7 @@ VU1_LOWER: "lqd."^VU1_LD VU1_LFT^",(--"^VU1_IS^")" is vu1_l_op7=0x40 & vu1_l_op1
 	build VU1_CLFTZ;
 	build VU1_CLFTW;
 }
-VU1_LOWER: "sqd."^VU1_LD VU1_LFS^",(--"^VU1_IT^")" is vu1_l_op7=0x40 & vu1_l_op11=0x37f & VU1_CSTW & VU1_CSTX & VU1_CSTY & VU1_CSTZ & VU1_IT & VU1_LD & VU1_LFS & VU1_RIT & VU1_RLFSW & VU1_RLFSX & VU1_RLFSY & VU1_RLFSZ & VU1_WIT {
+VU1_LOWER: "sqd."^vu1_l_destn VU1_LFS^",(--"^VU1_IT^")" is vu1_l_op7=0x40 & vu1_l_op11=0x37f & VU1_CSTW & VU1_CSTX & VU1_CSTY & VU1_CSTZ & VU1_IT & vu1_l_destn & VU1_LFS & VU1_RIT & VU1_RLFSW & VU1_RLFSX & VU1_RLFSY & VU1_RLFSZ & VU1_WIT {
 	local dec:2 = VU1_RIT - 1;
 	VU1_WIT = dec;
 	local qa:2 = (dec) & 0x3ff;
@@ -4647,7 +4501,7 @@ VU1_LOWER: "waitq" is vu1_l_op7=0x40 & vu1_l_op11=0x3bf  & vu1_l_dest=0 & vu1_l_
 VU1_LOWER: "mtir" VU1_IT^","^vu1_l_fs^VU1_LFSF is vu1_l_op7=0x40 & vu1_l_op11=0x3fc & VU1_IT & VU1_LFSF & VU1_RLFSF & VU1_WIT & vu1_l_fs & vu1_l_ftf=0 {
 	VU1_WIT = VU1_RLFSF:2;
 }
-VU1_LOWER: "mfir."^VU1_LD VU1_LFT^","^VU1_IS is vu1_l_op7=0x40 & vu1_l_op11=0x3fd & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_IS & VU1_LD & VU1_LFT & VU1_RIS {
+VU1_LOWER: "mfir."^vu1_l_destn VU1_LFT^","^VU1_IS is vu1_l_op7=0x40 & vu1_l_op11=0x3fd & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_IS & vu1_l_destn & VU1_LFT & VU1_RIS {
 	local iv:4 = sext(VU1_RIS);
 	vu1_tr_x = iv;
 	vu1_tr_y = iv;
@@ -4658,12 +4512,12 @@ VU1_LOWER: "mfir."^VU1_LD VU1_LFT^","^VU1_IS is vu1_l_op7=0x40 & vu1_l_op11=0x3f
 	build VU1_CLFTZ;
 	build VU1_CLFTW;
 }
-VU1_LOWER: "ilwr."^VU1_LD VU1_IT^",("^VU1_IS^")"^VU1_LD2 is vu1_l_op7=0x40 & vu1_l_op11=0x3fe & VU1_CILW & VU1_IS & VU1_IT & VU1_LD & VU1_LD2 & VU1_RIS {
+VU1_LOWER: "ilwr."^vu1_l_destn VU1_IT^",("^VU1_IS^")"^vu1_l_destn2 is vu1_l_op7=0x40 & vu1_l_op11=0x3fe & VU1_CILW & VU1_IS & VU1_IT & vu1_l_destn & vu1_l_destn2 & VU1_RIS {
 	local qa:2 = (VU1_RIS) & 0x3ff;
 	vu1_tr_ea = 0x1100c000 + zext(qa) * 16;
 	build VU1_CILW;
 }
-VU1_LOWER: "iswr."^VU1_LD VU1_IT^",("^VU1_IS^")"^VU1_LD2 is vu1_l_op7=0x40 & vu1_l_op11=0x3ff & VU1_CSTW & VU1_CSTX & VU1_CSTY & VU1_CSTZ & VU1_IS & VU1_IT & VU1_LD & VU1_LD2 & VU1_RIS & VU1_RIT {
+VU1_LOWER: "iswr."^vu1_l_destn VU1_IT^",("^VU1_IS^")"^vu1_l_destn2 is vu1_l_op7=0x40 & vu1_l_op11=0x3ff & VU1_CSTW & VU1_CSTX & VU1_CSTY & VU1_CSTZ & VU1_IS & VU1_IT & vu1_l_destn & vu1_l_destn2 & VU1_RIS & VU1_RIT {
 	local qa:2 = (VU1_RIS) & 0x3ff;
 	vu1_tr_ea = 0x1100c000 + zext(qa) * 16;
 	vu1_tr_x = zext(VU1_RIT);
@@ -4675,7 +4529,7 @@ VU1_LOWER: "iswr."^VU1_LD VU1_IT^",("^VU1_IS^")"^VU1_LD2 is vu1_l_op7=0x40 & vu1
 	build VU1_CSTZ;
 	build VU1_CSTW;
 }
-VU1_LOWER: "rnext."^VU1_LD VU1_LFT^",r" is vu1_l_op7=0x40 & vu1_l_op11=0x43c & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_LD & VU1_LFT & vu1_l_is=0 {
+VU1_LOWER: "rnext."^vu1_l_destn VU1_LFT^",r" is vu1_l_op7=0x40 & vu1_l_op11=0x43c & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & vu1_l_destn & VU1_LFT & vu1_l_is=0 {
 	local fb:4 = ((vu1_r >> 4) ^ (vu1_r >> 22)) & 1;
 	vu1_r = (((vu1_r << 1) ^ fb) & 0x7fffff) | 0x3f800000;
 	vu1_tr_x = vu1_r;
@@ -4687,7 +4541,7 @@ VU1_LOWER: "rnext."^VU1_LD VU1_LFT^",r" is vu1_l_op7=0x40 & vu1_l_op11=0x43c & V
 	build VU1_CLFTZ;
 	build VU1_CLFTW;
 }
-VU1_LOWER: "rget."^VU1_LD VU1_LFT^",r" is vu1_l_op7=0x40 & vu1_l_op11=0x43d & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_LD & VU1_LFT & vu1_l_is=0 {
+VU1_LOWER: "rget."^vu1_l_destn VU1_LFT^",r" is vu1_l_op7=0x40 & vu1_l_op11=0x43d & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & vu1_l_destn & VU1_LFT & vu1_l_is=0 {
 	vu1_tr_x = vu1_r;
 	vu1_tr_y = vu1_r;
 	vu1_tr_z = vu1_r;
@@ -4703,7 +4557,7 @@ VU1_LOWER: "rinit r,"^vu1_l_fs^VU1_LFSF is vu1_l_op7=0x40 & vu1_l_op11=0x43e & V
 VU1_LOWER: "rxor r,"^vu1_l_fs^VU1_LFSF is vu1_l_op7=0x40 & vu1_l_op11=0x43f & VU1_LFSF & VU1_RLFSF & vu1_l_fs & vu1_l_ftf=0 & vu1_l_ft=0 {
 	vu1_r = 0x3f800000 | ((vu1_r ^ VU1_RLFSF) & 0x7fffff);
 }
-VU1_LOWER: "mfp."^VU1_LD VU1_LFT^",p" is vu1_l_op7=0x40 & vu1_l_op11=0x67c & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & VU1_LD & VU1_LFT & vu1_l_is=0 {
+VU1_LOWER: "mfp."^vu1_l_destn VU1_LFT^",p" is vu1_l_op7=0x40 & vu1_l_op11=0x67c & VU1_CLFTW & VU1_CLFTX & VU1_CLFTY & VU1_CLFTZ & vu1_l_destn & VU1_LFT & vu1_l_is=0 {
 	vu1_tr_x = vu1_p;
 	vu1_tr_y = vu1_p;
 	vu1_tr_z = vu1_p;

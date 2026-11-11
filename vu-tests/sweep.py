@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """sweep.py OUT.bin [SAMPLES] : random VU instructions covering every opcode-field value.
+sweep.py OUT.bin random COUNT : COUNT fully random 64-bit words (flag bits, invalid halves, odd pairs).
 
 For each upper opcode (bits 0-5, plus bits 6-10 for the special group) and each lower opcode
 (bits 25-31, plus bits 0-10 for the 0x40 group), emit SAMPLES words with random operand bits, and
@@ -11,8 +12,12 @@ import struct
 import sys
 
 UPPER_NOP, LOWER_NOP = 0x000002ff, 0x8000033c
-samples = int(sys.argv[2]) if len(sys.argv) > 2 else 24
 rng = random.Random(1)
+if len(sys.argv) > 3 and sys.argv[2] == 'random':
+	with open(sys.argv[1], 'wb') as f:
+		f.write(bytes(rng.getrandbits(8) for _ in range(8 * int(sys.argv[3]))))
+	sys.exit(0)
+samples = int(sys.argv[2]) if len(sys.argv) > 2 else 24
 pairs = []
 
 

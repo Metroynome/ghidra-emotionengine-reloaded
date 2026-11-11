@@ -58,6 +58,11 @@ define token instr(64)
 	l_imm24 = (0,23) dec
 	l_b24 = (24,24)
 	l_hi3 = (22,24)
+	# The flags and dest masks again, as named fields for display (see the Display section).
+	u_flagsn = (59,63)
+	u_destn = (53,56)
+	l_destn = (21,24)
+	l_destn2 = (21,24)
 	l_lo6 = (0,5)
 	# Upper instruction (second word).
 	u_word = (32,63)
@@ -111,86 +116,8 @@ attach variables [ l_fty l_fsy u_fty u_fsy u_fdy ] [ vf00_y vf01_y vf02_y vf03_y
 attach variables [ l_ftz l_fsz u_ftz u_fsz u_fdz ] [ vf00_z vf01_z vf02_z vf03_z vf04_z vf05_z vf06_z vf07_z vf08_z vf09_z vf10_z vf11_z vf12_z vf13_z vf14_z vf15_z vf16_z vf17_z vf18_z vf19_z vf20_z vf21_z vf22_z vf23_z vf24_z vf25_z vf26_z vf27_z vf28_z vf29_z vf30_z vf31_z ];
 attach variables [ l_ftw l_fsw u_ftw u_fsw u_fdw ] [ vf00_w vf01_w vf02_w vf03_w vf04_w vf05_w vf06_w vf07_w vf08_w vf09_w vf10_w vf11_w vf12_w vf13_w vf14_w vf15_w vf16_w vf17_w vf18_w vf19_w vf20_w vf21_w vf22_w vf23_w vf24_w vf25_w vf26_w vf27_w vf28_w vf29_w vf30_w vf31_w ];
 
-UD: "" is u_dest=0 { }
-UD: "w" is u_dest=1 { }
-UD: "z" is u_dest=2 { }
-UD: "zw" is u_dest=3 { }
-UD: "y" is u_dest=4 { }
-UD: "yw" is u_dest=5 { }
-UD: "yz" is u_dest=6 { }
-UD: "yzw" is u_dest=7 { }
-UD: "x" is u_dest=8 { }
-UD: "xw" is u_dest=9 { }
-UD: "xz" is u_dest=10 { }
-UD: "xzw" is u_dest=11 { }
-UD: "xy" is u_dest=12 { }
-UD: "xyw" is u_dest=13 { }
-UD: "xyz" is u_dest=14 { }
-UD: "xyzw" is u_dest=15 { }
-LD: "" is l_dest=0 { }
-LD: "w" is l_dest=1 { }
-LD: "z" is l_dest=2 { }
-LD: "zw" is l_dest=3 { }
-LD: "y" is l_dest=4 { }
-LD: "yw" is l_dest=5 { }
-LD: "yz" is l_dest=6 { }
-LD: "yzw" is l_dest=7 { }
-LD: "x" is l_dest=8 { }
-LD: "xw" is l_dest=9 { }
-LD: "xz" is l_dest=10 { }
-LD: "xzw" is l_dest=11 { }
-LD: "xy" is l_dest=12 { }
-LD: "xyw" is l_dest=13 { }
-LD: "xyz" is l_dest=14 { }
-LD: "xyzw" is l_dest=15 { }
-LD2: "" is l_dest=0 { }
-LD2: "w" is l_dest=1 { }
-LD2: "z" is l_dest=2 { }
-LD2: "zw" is l_dest=3 { }
-LD2: "y" is l_dest=4 { }
-LD2: "yw" is l_dest=5 { }
-LD2: "yz" is l_dest=6 { }
-LD2: "yzw" is l_dest=7 { }
-LD2: "x" is l_dest=8 { }
-LD2: "xw" is l_dest=9 { }
-LD2: "xz" is l_dest=10 { }
-LD2: "xzw" is l_dest=11 { }
-LD2: "xy" is l_dest=12 { }
-LD2: "xyw" is l_dest=13 { }
-LD2: "xyz" is l_dest=14 { }
-LD2: "xyzw" is l_dest=15 { }
-UF: "" is u_flags=0 { }
-UF: "[t]" is u_flags=1 { }
-UF: "[d]" is u_flags=2 { }
-UF: "[dt]" is u_flags=3 { }
-UF: "[m]" is u_flags=4 { }
-UF: "[mt]" is u_flags=5 { }
-UF: "[md]" is u_flags=6 { }
-UF: "[mdt]" is u_flags=7 { }
-UF: "[e]" is u_flags=8 { }
-UF: "[et]" is u_flags=9 { }
-UF: "[ed]" is u_flags=10 { }
-UF: "[edt]" is u_flags=11 { }
-UF: "[em]" is u_flags=12 { }
-UF: "[emt]" is u_flags=13 { }
-UF: "[emd]" is u_flags=14 { }
-UF: "[emdt]" is u_flags=15 { }
-UF: "[i]" is u_flags=16 { }
-UF: "[it]" is u_flags=17 { }
-UF: "[id]" is u_flags=18 { }
-UF: "[idt]" is u_flags=19 { }
-UF: "[im]" is u_flags=20 { }
-UF: "[imt]" is u_flags=21 { }
-UF: "[imd]" is u_flags=22 { }
-UF: "[imdt]" is u_flags=23 { }
-UF: "[ie]" is u_flags=24 { }
-UF: "[iet]" is u_flags=25 { }
-UF: "[ied]" is u_flags=26 { }
-UF: "[iedt]" is u_flags=27 { }
-UF: "[iem]" is u_flags=28 { }
-UF: "[iemt]" is u_flags=29 { }
-UF: "[iemd]" is u_flags=30 { }
-UF: "[iemdt]" is u_flags=31 { }
+attach names [ u_flagsn ] [ "" "[t]" "[d]" "[dt]" "[m]" "[mt]" "[md]" "[mdt]" "[e]" "[et]" "[ed]" "[edt]" "[em]" "[emt]" "[emd]" "[emdt]" "[i]" "[it]" "[id]" "[idt]" "[im]" "[imt]" "[imd]" "[imdt]" "[ie]" "[iet]" "[ied]" "[iedt]" "[iem]" "[iemt]" "[iemd]" "[iemdt]" ];
+attach names [ u_destn l_destn l_destn2 ] [ "" "w" "z" "zw" "y" "yw" "yz" "yzw" "x" "xw" "xz" "xzw" "xy" "xyw" "xyz" "xyzw" ];
 UBC: "x" is u_bc=0 { }
 UBC: "y" is u_bc=1 { }
 UBC: "z" is u_bc=2 { }
@@ -302,13 +229,13 @@ USNAP: is RUFSX & RUFTX & RUFSY & RUFTY & RUFSZ & RUFTZ & RUFSW & RUFTW {
 }
 
 # Display operands.
-UFD: u_fd^UD is u_fd & UD { }
-UFS: u_fs^UD is u_fs & UD { }
-UFT: u_ft^UD is u_ft & UD { }
-UACC: "acc"^UD is UD { }
+UFD: u_fd^u_destn is u_fd & u_destn { }
+UFS: u_fs^u_destn is u_fs & u_destn { }
+UFT: u_ft^u_destn is u_ft & u_destn { }
+UACC: "acc"^u_destn is u_destn { }
 UBCR: u_ft^UBC is u_ft & UBC { }
-LFT: l_ft^LD is l_ft & LD { }
-LFS: l_fs^LD is l_fs & LD { }
+LFT: l_ft^l_destn is l_ft & l_destn { }
+LFS: l_fs^l_destn is l_fs & l_destn { }
 IT: l_it is l_it { }
 IS: l_is is l_is { }
 ID: l_id is l_id { }
@@ -367,7 +294,7 @@ CSTW: is l_dw=0 { }
 CSTW: is l_dw=1 { *[vumem]:4 (tr_ea + 12) = tr_w; }
 
 # Upper instructions. The u_res bits are always clear.
-UPPER: "add"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
+UPPER: "add"^UBC^u_flagsn^"."^u_destn UFD^","^UFS^","^UBCR is u_op4=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f+ UBCV;
 	local r_y:4 = us_y f+ UBCV;
 	local r_z:4 = us_z f+ UBCV;
@@ -397,7 +324,7 @@ UPPER: "add"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=0 & u_res=0 & UF & UD &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "sub"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=1 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
+UPPER: "sub"^UBC^u_flagsn^"."^u_destn UFD^","^UFS^","^UBCR is u_op4=1 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f- UBCV;
 	local r_y:4 = us_y f- UBCV;
 	local r_z:4 = us_z f- UBCV;
@@ -427,7 +354,7 @@ UPPER: "sub"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=1 & u_res=0 & UF & UD &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "madd"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=2 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
+UPPER: "madd"^UBC^u_flagsn^"."^u_destn UFD^","^UFS^","^UBCR is u_op4=2 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
 	local r_x:4 = acc_x f+ (us_x f* UBCV);
 	local r_y:4 = acc_y f+ (us_y f* UBCV);
 	local r_z:4 = acc_z f+ (us_z f* UBCV);
@@ -457,7 +384,7 @@ UPPER: "madd"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=2 & u_res=0 & UF & UD 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "msub"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=3 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
+UPPER: "msub"^UBC^u_flagsn^"."^u_destn UFD^","^UFS^","^UBCR is u_op4=3 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
 	local r_x:4 = acc_x f- (us_x f* UBCV);
 	local r_y:4 = acc_y f- (us_y f* UBCV);
 	local r_z:4 = acc_z f- (us_z f* UBCV);
@@ -487,7 +414,7 @@ UPPER: "msub"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=3 & u_res=0 & UF & UD 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "max"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=4 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UFD & UFS {
+UPPER: "max"^UBC^u_flagsn^"."^u_destn UFD^","^UFS^","^UBCR is u_op4=4 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UFD & UFS {
 	local m_x:4 = us_x;
 	if (!(UBCV f> us_x)) goto <m_x_keep>;
 	m_x = UBCV;
@@ -521,7 +448,7 @@ UPPER: "max"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=4 & u_res=0 & UF & UD &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "mini"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=5 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UFD & UFS {
+UPPER: "mini"^UBC^u_flagsn^"."^u_destn UFD^","^UFS^","^UBCR is u_op4=5 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UFD & UFS {
 	local m_x:4 = us_x;
 	if (!(UBCV f< us_x)) goto <m_x_keep>;
 	m_x = UBCV;
@@ -555,7 +482,7 @@ UPPER: "mini"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=5 & u_res=0 & UF & UD 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "mul"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=6 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
+UPPER: "mul"^UBC^u_flagsn^"."^u_destn UFD^","^UFS^","^UBCR is u_op4=6 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UBC & UBCR & UBCV & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f* UBCV;
 	local r_y:4 = us_y f* UBCV;
 	local r_z:4 = us_z f* UBCV;
@@ -585,7 +512,7 @@ UPPER: "mul"^UBC^UF^"."^UD UFD^","^UFS^","^UBCR is u_op4=6 & u_res=0 & UF & UD &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "mulq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x1c & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
+UPPER: "mulq"^u_flagsn^"."^u_destn UFD^","^UFS^",q" is u_op6=0x1c & u_ft=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f* uq;
 	local r_y:4 = us_y f* uq;
 	local r_z:4 = us_z f* uq;
@@ -615,7 +542,7 @@ UPPER: "mulq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x1c & u_ft=0 & u_res=0 & UF &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "maxi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x1d & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
+UPPER: "maxi"^u_flagsn^"."^u_destn UFD^","^UFS^",i" is u_op6=0x1d & u_ft=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
 	local m_x:4 = us_x;
 	if (!(ui f> us_x)) goto <m_x_keep>;
 	m_x = ui;
@@ -649,7 +576,7 @@ UPPER: "maxi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x1d & u_ft=0 & u_res=0 & UF &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "muli"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x1e & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
+UPPER: "muli"^u_flagsn^"."^u_destn UFD^","^UFS^",i" is u_op6=0x1e & u_ft=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f* ui;
 	local r_y:4 = us_y f* ui;
 	local r_z:4 = us_z f* ui;
@@ -679,7 +606,7 @@ UPPER: "muli"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x1e & u_ft=0 & u_res=0 & UF &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "minii"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x1f & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
+UPPER: "minii"^u_flagsn^"."^u_destn UFD^","^UFS^",i" is u_op6=0x1f & u_ft=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS {
 	local m_x:4 = us_x;
 	if (!(ui f< us_x)) goto <m_x_keep>;
 	m_x = ui;
@@ -713,7 +640,7 @@ UPPER: "minii"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x1f & u_ft=0 & u_res=0 & UF 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "addq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x20 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
+UPPER: "addq"^u_flagsn^"."^u_destn UFD^","^UFS^",q" is u_op6=0x20 & u_ft=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f+ uq;
 	local r_y:4 = us_y f+ uq;
 	local r_z:4 = us_z f+ uq;
@@ -743,7 +670,7 @@ UPPER: "addq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x20 & u_ft=0 & u_res=0 & UF &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "maddq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x21 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
+UPPER: "maddq"^u_flagsn^"."^u_destn UFD^","^UFS^",q" is u_op6=0x21 & u_ft=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = acc_x f+ (us_x f* uq);
 	local r_y:4 = acc_y f+ (us_y f* uq);
 	local r_z:4 = acc_z f+ (us_z f* uq);
@@ -773,7 +700,7 @@ UPPER: "maddq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x21 & u_ft=0 & u_res=0 & UF 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "addi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x22 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
+UPPER: "addi"^u_flagsn^"."^u_destn UFD^","^UFS^",i" is u_op6=0x22 & u_ft=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f+ ui;
 	local r_y:4 = us_y f+ ui;
 	local r_z:4 = us_z f+ ui;
@@ -803,7 +730,7 @@ UPPER: "addi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x22 & u_ft=0 & u_res=0 & UF &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "maddi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x23 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
+UPPER: "maddi"^u_flagsn^"."^u_destn UFD^","^UFS^",i" is u_op6=0x23 & u_ft=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = acc_x f+ (us_x f* ui);
 	local r_y:4 = acc_y f+ (us_y f* ui);
 	local r_z:4 = acc_z f+ (us_z f* ui);
@@ -833,7 +760,7 @@ UPPER: "maddi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x23 & u_ft=0 & u_res=0 & UF 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "subq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x24 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
+UPPER: "subq"^u_flagsn^"."^u_destn UFD^","^UFS^",q" is u_op6=0x24 & u_ft=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f- uq;
 	local r_y:4 = us_y f- uq;
 	local r_z:4 = us_z f- uq;
@@ -863,7 +790,7 @@ UPPER: "subq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x24 & u_ft=0 & u_res=0 & UF &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "msubq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x25 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
+UPPER: "msubq"^u_flagsn^"."^u_destn UFD^","^UFS^",q" is u_op6=0x25 & u_ft=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = acc_x f- (us_x f* uq);
 	local r_y:4 = acc_y f- (us_y f* uq);
 	local r_z:4 = acc_z f- (us_z f* uq);
@@ -893,7 +820,7 @@ UPPER: "msubq"^UF^"."^UD UFD^","^UFS^",q" is u_op6=0x25 & u_ft=0 & u_res=0 & UF 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "subi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x26 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
+UPPER: "subi"^u_flagsn^"."^u_destn UFD^","^UFS^",i" is u_op6=0x26 & u_ft=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = us_x f- ui;
 	local r_y:4 = us_y f- ui;
 	local r_z:4 = us_z f- ui;
@@ -923,7 +850,7 @@ UPPER: "subi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x26 & u_ft=0 & u_res=0 & UF &
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "msubi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x27 & u_ft=0 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
+UPPER: "msubi"^u_flagsn^"."^u_destn UFD^","^UFS^",i" is u_op6=0x27 & u_ft=0 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS {
 	local r_x:4 = acc_x f- (us_x f* ui);
 	local r_y:4 = acc_y f- (us_y f* ui);
 	local r_z:4 = acc_z f- (us_z f* ui);
@@ -953,7 +880,7 @@ UPPER: "msubi"^UF^"."^UD UFD^","^UFS^",i" is u_op6=0x27 & u_ft=0 & u_res=0 & UF 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "add"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x28 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
+UPPER: "add"^u_flagsn^"."^u_destn UFD^","^UFS^","^UFT is u_op6=0x28 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
 	local r_x:4 = us_x f+ ut_x;
 	local r_y:4 = us_y f+ ut_y;
 	local r_z:4 = us_z f+ ut_z;
@@ -983,7 +910,7 @@ UPPER: "add"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x28 & u_res=0 & UF & UD & C
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "madd"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x29 & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
+UPPER: "madd"^u_flagsn^"."^u_destn UFD^","^UFS^","^UFT is u_op6=0x29 & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
 	local r_x:4 = acc_x f+ (us_x f* ut_x);
 	local r_y:4 = acc_y f+ (us_y f* ut_y);
 	local r_z:4 = acc_z f+ (us_z f* ut_z);
@@ -1013,7 +940,7 @@ UPPER: "madd"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x29 & u_res=0 & UF & UD & 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "mul"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2a & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
+UPPER: "mul"^u_flagsn^"."^u_destn UFD^","^UFS^","^UFT is u_op6=0x2a & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
 	local r_x:4 = us_x f* ut_x;
 	local r_y:4 = us_y f* ut_y;
 	local r_z:4 = us_z f* ut_z;
@@ -1043,7 +970,7 @@ UPPER: "mul"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2a & u_res=0 & UF & UD & C
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "max"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2b & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS & UFT {
+UPPER: "max"^u_flagsn^"."^u_destn UFD^","^UFS^","^UFT is u_op6=0x2b & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS & UFT {
 	local m_x:4 = us_x;
 	if (!(ut_x f> us_x)) goto <m_x_keep>;
 	m_x = ut_x;
@@ -1077,7 +1004,7 @@ UPPER: "max"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2b & u_res=0 & UF & UD & C
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "sub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2c & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
+UPPER: "sub"^u_flagsn^"."^u_destn UFD^","^UFS^","^UFT is u_op6=0x2c & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
 	local r_x:4 = us_x f- ut_x;
 	local r_y:4 = us_y f- ut_y;
 	local r_z:4 = us_z f- ut_z;
@@ -1107,7 +1034,7 @@ UPPER: "sub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2c & u_res=0 & UF & UD & C
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "msub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2d & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
+UPPER: "msub"^u_flagsn^"."^u_destn UFD^","^UFS^","^UFT is u_op6=0x2d & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
 	local r_x:4 = acc_x f- (us_x f* ut_x);
 	local r_y:4 = acc_y f- (us_y f* ut_y);
 	local r_z:4 = acc_z f- (us_z f* ut_z);
@@ -1137,7 +1064,7 @@ UPPER: "msub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2d & u_res=0 & UF & UD & 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "mini"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2f & u_res=0 & UF & UD & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS & UFT {
+UPPER: "mini"^u_flagsn^"."^u_destn UFD^","^UFS^","^UFT is u_op6=0x2f & u_res=0 & u_flagsn & u_destn & CUFDW & CUFDX & CUFDY & CUFDZ & UFD & UFS & UFT {
 	local m_x:4 = us_x;
 	if (!(ut_x f< us_x)) goto <m_x_keep>;
 	m_x = ut_x;
@@ -1171,7 +1098,7 @@ UPPER: "mini"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2f & u_res=0 & UF & UD & 
 	build CUFDZ;
 	build CUFDW;
 }
-UPPER: "adda"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
+UPPER: "adda"^UBC^u_flagsn^"."^u_destn UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=0 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
 	local r_x:4 = us_x f+ UBCV;
 	local r_y:4 = us_y f+ UBCV;
 	local r_z:4 = us_z f+ UBCV;
@@ -1201,7 +1128,7 @@ UPPER: "adda"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=0 & u_re
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "suba"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=1 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
+UPPER: "suba"^UBC^u_flagsn^"."^u_destn UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=1 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
 	local r_x:4 = us_x f- UBCV;
 	local r_y:4 = us_y f- UBCV;
 	local r_z:4 = us_z f- UBCV;
@@ -1231,7 +1158,7 @@ UPPER: "suba"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=1 & u_re
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "madda"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=2 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
+UPPER: "madda"^UBC^u_flagsn^"."^u_destn UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=2 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
 	local r_x:4 = acc_x f+ (us_x f* UBCV);
 	local r_y:4 = acc_y f+ (us_y f* UBCV);
 	local r_z:4 = acc_z f+ (us_z f* UBCV);
@@ -1261,7 +1188,7 @@ UPPER: "madda"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=2 & u_r
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "msuba"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=3 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
+UPPER: "msuba"^UBC^u_flagsn^"."^u_destn UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=3 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
 	local r_x:4 = acc_x f- (us_x f* UBCV);
 	local r_y:4 = acc_y f- (us_y f* UBCV);
 	local r_z:4 = acc_z f- (us_z f* UBCV);
@@ -1291,7 +1218,7 @@ UPPER: "msuba"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=3 & u_r
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "mula"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=6 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
+UPPER: "mula"^UBC^u_flagsn^"."^u_destn UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=6 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UBC & UBCR & UBCV & UDMASK & UFS {
 	local r_x:4 = us_x f* UBCV;
 	local r_y:4 = us_y f* UBCV;
 	local r_z:4 = us_z f* UBCV;
@@ -1321,7 +1248,7 @@ UPPER: "mula"^UBC^UF^"."^UD UACC^","^UFS^","^UBCR is u_op6>=0x3c & u_fd=6 & u_re
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "mulaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x1fc & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
+UPPER: "mulaq"^u_flagsn^"."^u_destn UACC^","^UFS^",q" is u_op11=0x1fc & u_ft=0 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = us_x f* uq;
 	local r_y:4 = us_y f* uq;
 	local r_z:4 = us_z f* uq;
@@ -1351,7 +1278,7 @@ UPPER: "mulaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x1fc & u_ft=0 & u_res=0 & 
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "mulai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x1fe & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
+UPPER: "mulai"^u_flagsn^"."^u_destn UACC^","^UFS^",i" is u_op11=0x1fe & u_ft=0 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = us_x f* ui;
 	local r_y:4 = us_y f* ui;
 	local r_z:4 = us_z f* ui;
@@ -1381,7 +1308,7 @@ UPPER: "mulai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x1fe & u_ft=0 & u_res=0 & 
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "addaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x23c & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
+UPPER: "addaq"^u_flagsn^"."^u_destn UACC^","^UFS^",q" is u_op11=0x23c & u_ft=0 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = us_x f+ uq;
 	local r_y:4 = us_y f+ uq;
 	local r_z:4 = us_z f+ uq;
@@ -1411,7 +1338,7 @@ UPPER: "addaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x23c & u_ft=0 & u_res=0 & 
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "maddaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x23d & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
+UPPER: "maddaq"^u_flagsn^"."^u_destn UACC^","^UFS^",q" is u_op11=0x23d & u_ft=0 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = acc_x f+ (us_x f* uq);
 	local r_y:4 = acc_y f+ (us_y f* uq);
 	local r_z:4 = acc_z f+ (us_z f* uq);
@@ -1441,7 +1368,7 @@ UPPER: "maddaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x23d & u_ft=0 & u_res=0 &
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "addai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x23e & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
+UPPER: "addai"^u_flagsn^"."^u_destn UACC^","^UFS^",i" is u_op11=0x23e & u_ft=0 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = us_x f+ ui;
 	local r_y:4 = us_y f+ ui;
 	local r_z:4 = us_z f+ ui;
@@ -1471,7 +1398,7 @@ UPPER: "addai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x23e & u_ft=0 & u_res=0 & 
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "maddai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x23f & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
+UPPER: "maddai"^u_flagsn^"."^u_destn UACC^","^UFS^",i" is u_op11=0x23f & u_ft=0 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = acc_x f+ (us_x f* ui);
 	local r_y:4 = acc_y f+ (us_y f* ui);
 	local r_z:4 = acc_z f+ (us_z f* ui);
@@ -1501,7 +1428,7 @@ UPPER: "maddai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x23f & u_ft=0 & u_res=0 &
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "subaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x27c & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
+UPPER: "subaq"^u_flagsn^"."^u_destn UACC^","^UFS^",q" is u_op11=0x27c & u_ft=0 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = us_x f- uq;
 	local r_y:4 = us_y f- uq;
 	local r_z:4 = us_z f- uq;
@@ -1531,7 +1458,7 @@ UPPER: "subaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x27c & u_ft=0 & u_res=0 & 
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "msubaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x27d & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
+UPPER: "msubaq"^u_flagsn^"."^u_destn UACC^","^UFS^",q" is u_op11=0x27d & u_ft=0 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = acc_x f- (us_x f* uq);
 	local r_y:4 = acc_y f- (us_y f* uq);
 	local r_z:4 = acc_z f- (us_z f* uq);
@@ -1561,7 +1488,7 @@ UPPER: "msubaq"^UF^"."^UD UACC^","^UFS^",q" is u_op11=0x27d & u_ft=0 & u_res=0 &
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "subai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x27e & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
+UPPER: "subai"^u_flagsn^"."^u_destn UACC^","^UFS^",i" is u_op11=0x27e & u_ft=0 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = us_x f- ui;
 	local r_y:4 = us_y f- ui;
 	local r_z:4 = us_z f- ui;
@@ -1591,7 +1518,7 @@ UPPER: "subai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x27e & u_ft=0 & u_res=0 & 
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "msubai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x27f & u_ft=0 & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
+UPPER: "msubai"^u_flagsn^"."^u_destn UACC^","^UFS^",i" is u_op11=0x27f & u_ft=0 & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS {
 	local r_x:4 = acc_x f- (us_x f* ui);
 	local r_y:4 = acc_y f- (us_y f* ui);
 	local r_z:4 = acc_z f- (us_z f* ui);
@@ -1621,7 +1548,7 @@ UPPER: "msubai"^UF^"."^UD UACC^","^UFS^",i" is u_op11=0x27f & u_ft=0 & u_res=0 &
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "adda"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2bc & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
+UPPER: "adda"^u_flagsn^"."^u_destn UACC^","^UFS^","^UFT is u_op11=0x2bc & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
 	local r_x:4 = us_x f+ ut_x;
 	local r_y:4 = us_y f+ ut_y;
 	local r_z:4 = us_z f+ ut_z;
@@ -1651,7 +1578,7 @@ UPPER: "adda"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2bc & u_res=0 & UF & UD
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "madda"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2bd & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
+UPPER: "madda"^u_flagsn^"."^u_destn UACC^","^UFS^","^UFT is u_op11=0x2bd & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
 	local r_x:4 = acc_x f+ (us_x f* ut_x);
 	local r_y:4 = acc_y f+ (us_y f* ut_y);
 	local r_z:4 = acc_z f+ (us_z f* ut_z);
@@ -1681,7 +1608,7 @@ UPPER: "madda"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2bd & u_res=0 & UF & U
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "mula"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2be & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
+UPPER: "mula"^u_flagsn^"."^u_destn UACC^","^UFS^","^UFT is u_op11=0x2be & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
 	local r_x:4 = us_x f* ut_x;
 	local r_y:4 = us_y f* ut_y;
 	local r_z:4 = us_z f* ut_z;
@@ -1711,7 +1638,7 @@ UPPER: "mula"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2be & u_res=0 & UF & UD
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "suba"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fc & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
+UPPER: "suba"^u_flagsn^"."^u_destn UACC^","^UFS^","^UFT is u_op11=0x2fc & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
 	local r_x:4 = us_x f- ut_x;
 	local r_y:4 = us_y f- ut_y;
 	local r_z:4 = us_z f- ut_z;
@@ -1741,7 +1668,7 @@ UPPER: "suba"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fc & u_res=0 & UF & UD
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "msuba"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fd & u_res=0 & UF & UD & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
+UPPER: "msuba"^u_flagsn^"."^u_destn UACC^","^UFS^","^UFT is u_op11=0x2fd & u_res=0 & u_flagsn & u_destn & CACCW & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
 	local r_x:4 = acc_x f- (us_x f* ut_x);
 	local r_y:4 = acc_y f- (us_y f* ut_y);
 	local r_z:4 = acc_z f- (us_z f* ut_z);
@@ -1771,7 +1698,7 @@ UPPER: "msuba"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fd & u_res=0 & UF & U
 	build CACCZ;
 	build CACCW;
 }
-UPPER: "opmula"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fe & u_res=0 & UF & UD & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
+UPPER: "opmula"^u_flagsn^"."^u_destn UACC^","^UFS^","^UFT is u_op11=0x2fe & u_res=0 & u_flagsn & u_destn & CACCX & CACCY & CACCZ & UACC & UDMASK & UFS & UFT {
 	local r_x:4 = us_y f* ut_z;
 	local r_y:4 = us_z f* ut_x;
 	local r_z:4 = us_x f* ut_y;
@@ -1795,7 +1722,7 @@ UPPER: "opmula"^UF^"."^UD UACC^","^UFS^","^UFT is u_op11=0x2fe & u_res=0 & UF & 
 	build CACCY;
 	build CACCZ;
 }
-UPPER: "opmsub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2e & u_res=0 & UF & UD & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
+UPPER: "opmsub"^u_flagsn^"."^u_destn UFD^","^UFS^","^UFT is u_op6=0x2e & u_res=0 & u_flagsn & u_destn & CUFDX & CUFDY & CUFDZ & UDMASK & UFD & UFS & UFT {
 	local r_x:4 = acc_x f- (us_y f* ut_z);
 	local r_y:4 = acc_y f- (us_z f* ut_x);
 	local r_z:4 = acc_z f- (us_x f* ut_y);
@@ -1819,7 +1746,7 @@ UPPER: "opmsub"^UF^"."^UD UFD^","^UFS^","^UFT is u_op6=0x2e & u_res=0 & UF & UD 
 	build CUFDY;
 	build CUFDZ;
 }
-UPPER: "abs"^UF^"."^UD UFT^","^UFS is u_op11=0x1fd & u_res=0 & UF & UD & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
+UPPER: "abs"^u_flagsn^"."^u_destn UFT^","^UFS is u_op11=0x1fd & u_res=0 & u_flagsn & u_destn & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
 	tr_x = abs(us_x);
 	tr_y = abs(us_y);
 	tr_z = abs(us_z);
@@ -1829,7 +1756,7 @@ UPPER: "abs"^UF^"."^UD UFT^","^UFS is u_op11=0x1fd & u_res=0 & UF & UD & CUFTW &
 	build CUFTZ;
 	build CUFTW;
 }
-UPPER: "itof0"^UF^"."^UD UFT^","^UFS is u_op11=0x13c & u_res=0 & UF & UD & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
+UPPER: "itof0"^u_flagsn^"."^u_destn UFT^","^UFS is u_op11=0x13c & u_res=0 & u_flagsn & u_destn & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
 	tr_x = int2float(us_x) f/ int2float(1:4);
 	tr_y = int2float(us_y) f/ int2float(1:4);
 	tr_z = int2float(us_z) f/ int2float(1:4);
@@ -1839,7 +1766,7 @@ UPPER: "itof0"^UF^"."^UD UFT^","^UFS is u_op11=0x13c & u_res=0 & UF & UD & CUFTW
 	build CUFTZ;
 	build CUFTW;
 }
-UPPER: "ftoi0"^UF^"."^UD UFT^","^UFS is u_op11=0x17c & u_res=0 & UF & UD & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
+UPPER: "ftoi0"^u_flagsn^"."^u_destn UFT^","^UFS is u_op11=0x17c & u_res=0 & u_flagsn & u_destn & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
 	tr_x = trunc(us_x f* int2float(1:4));
 	tr_y = trunc(us_y f* int2float(1:4));
 	tr_z = trunc(us_z f* int2float(1:4));
@@ -1849,7 +1776,7 @@ UPPER: "ftoi0"^UF^"."^UD UFT^","^UFS is u_op11=0x17c & u_res=0 & UF & UD & CUFTW
 	build CUFTZ;
 	build CUFTW;
 }
-UPPER: "itof4"^UF^"."^UD UFT^","^UFS is u_op11=0x13d & u_res=0 & UF & UD & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
+UPPER: "itof4"^u_flagsn^"."^u_destn UFT^","^UFS is u_op11=0x13d & u_res=0 & u_flagsn & u_destn & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
 	tr_x = int2float(us_x) f/ int2float(16:4);
 	tr_y = int2float(us_y) f/ int2float(16:4);
 	tr_z = int2float(us_z) f/ int2float(16:4);
@@ -1859,7 +1786,7 @@ UPPER: "itof4"^UF^"."^UD UFT^","^UFS is u_op11=0x13d & u_res=0 & UF & UD & CUFTW
 	build CUFTZ;
 	build CUFTW;
 }
-UPPER: "ftoi4"^UF^"."^UD UFT^","^UFS is u_op11=0x17d & u_res=0 & UF & UD & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
+UPPER: "ftoi4"^u_flagsn^"."^u_destn UFT^","^UFS is u_op11=0x17d & u_res=0 & u_flagsn & u_destn & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
 	tr_x = trunc(us_x f* int2float(16:4));
 	tr_y = trunc(us_y f* int2float(16:4));
 	tr_z = trunc(us_z f* int2float(16:4));
@@ -1869,7 +1796,7 @@ UPPER: "ftoi4"^UF^"."^UD UFT^","^UFS is u_op11=0x17d & u_res=0 & UF & UD & CUFTW
 	build CUFTZ;
 	build CUFTW;
 }
-UPPER: "itof12"^UF^"."^UD UFT^","^UFS is u_op11=0x13e & u_res=0 & UF & UD & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
+UPPER: "itof12"^u_flagsn^"."^u_destn UFT^","^UFS is u_op11=0x13e & u_res=0 & u_flagsn & u_destn & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
 	tr_x = int2float(us_x) f/ int2float(4096:4);
 	tr_y = int2float(us_y) f/ int2float(4096:4);
 	tr_z = int2float(us_z) f/ int2float(4096:4);
@@ -1879,7 +1806,7 @@ UPPER: "itof12"^UF^"."^UD UFT^","^UFS is u_op11=0x13e & u_res=0 & UF & UD & CUFT
 	build CUFTZ;
 	build CUFTW;
 }
-UPPER: "ftoi12"^UF^"."^UD UFT^","^UFS is u_op11=0x17e & u_res=0 & UF & UD & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
+UPPER: "ftoi12"^u_flagsn^"."^u_destn UFT^","^UFS is u_op11=0x17e & u_res=0 & u_flagsn & u_destn & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
 	tr_x = trunc(us_x f* int2float(4096:4));
 	tr_y = trunc(us_y f* int2float(4096:4));
 	tr_z = trunc(us_z f* int2float(4096:4));
@@ -1889,7 +1816,7 @@ UPPER: "ftoi12"^UF^"."^UD UFT^","^UFS is u_op11=0x17e & u_res=0 & UF & UD & CUFT
 	build CUFTZ;
 	build CUFTW;
 }
-UPPER: "itof15"^UF^"."^UD UFT^","^UFS is u_op11=0x13f & u_res=0 & UF & UD & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
+UPPER: "itof15"^u_flagsn^"."^u_destn UFT^","^UFS is u_op11=0x13f & u_res=0 & u_flagsn & u_destn & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
 	tr_x = int2float(us_x) f/ int2float(32768:4);
 	tr_y = int2float(us_y) f/ int2float(32768:4);
 	tr_z = int2float(us_z) f/ int2float(32768:4);
@@ -1899,7 +1826,7 @@ UPPER: "itof15"^UF^"."^UD UFT^","^UFS is u_op11=0x13f & u_res=0 & UF & UD & CUFT
 	build CUFTZ;
 	build CUFTW;
 }
-UPPER: "ftoi15"^UF^"."^UD UFT^","^UFS is u_op11=0x17f & u_res=0 & UF & UD & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
+UPPER: "ftoi15"^u_flagsn^"."^u_destn UFT^","^UFS is u_op11=0x17f & u_res=0 & u_flagsn & u_destn & CUFTW & CUFTX & CUFTY & CUFTZ & UFS & UFT {
 	tr_x = trunc(us_x f* int2float(32768:4));
 	tr_y = trunc(us_y f* int2float(32768:4));
 	tr_z = trunc(us_z f* int2float(32768:4));
@@ -1909,7 +1836,7 @@ UPPER: "ftoi15"^UF^"."^UD UFT^","^UFS is u_op11=0x17f & u_res=0 & UF & UD & CUFT
 	build CUFTZ;
 	build CUFTW;
 }
-UPPER: "clipw"^UF^"."^UD UFS^","^u_ft^"w" is u_op11=0x1ff & u_dest=0xe & u_res=0 & UF & UD & UFS & u_ft {
+UPPER: "clipw"^u_flagsn^"."^u_destn UFS^","^u_ft^"w" is u_op11=0x1ff & u_dest=0xe & u_res=0 & u_flagsn & u_destn & UFS & u_ft {
 	local lim:4 = abs(ut_w);
 	local bits:4 = 0;
 	bits = bits | (zext(us_x f> lim) << 0);
@@ -1920,12 +1847,12 @@ UPPER: "clipw"^UF^"."^UD UFS^","^u_ft^"w" is u_op11=0x1ff & u_dest=0xe & u_res=0
 	bits = bits | (zext(us_z f< f- lim) << 5);
 	clip = ((clip << 6) | bits) & 0xffffff;
 }
-UPPER: "nop"^UF is u_op11=0x2ff & u_res=0 & u_dest=0 & u_ft=0 & u_fs=0 & UF { }
+UPPER: "nop"^u_flagsn is u_op11=0x2ff & u_res=0 & u_dest=0 & u_ft=0 & u_fs=0 & u_flagsn { }
 # The reference decodes each half on its own and shows an invalid half as *unknown*.
 UPPER: "*unknown*" is u_word { }
 
 # Lower instructions.
-LOWER: "lq."^LD LFT^","^l_imm11^"("^IS^")" is l_op7=0x0 & CLFTW & CLFTX & CLFTY & CLFTZ & IS & LD & LFT & RIS & l_imm11 {
+LOWER: "lq."^l_destn LFT^","^l_imm11^"("^IS^")" is l_op7=0x0 & CLFTW & CLFTX & CLFTY & CLFTZ & IS & l_destn & LFT & RIS & l_imm11 {
 	local qa:2 = (RIS + l_imm11) & 0x3ff;
 	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = *[vumem]:4 (tr_ea + 0);
@@ -1937,7 +1864,7 @@ LOWER: "lq."^LD LFT^","^l_imm11^"("^IS^")" is l_op7=0x0 & CLFTW & CLFTX & CLFTY 
 	build CLFTZ;
 	build CLFTW;
 }
-LOWER: "sq."^LD LFS^","^l_imm11^"("^IT^")" is l_op7=0x1 & CSTW & CSTX & CSTY & CSTZ & IT & LD & LFS & RIT & RLFSW & RLFSX & RLFSY & RLFSZ & l_imm11 {
+LOWER: "sq."^l_destn LFS^","^l_imm11^"("^IT^")" is l_op7=0x1 & CSTW & CSTX & CSTY & CSTZ & IT & l_destn & LFS & RIT & RLFSW & RLFSX & RLFSY & RLFSZ & l_imm11 {
 	local qa:2 = (RIT + l_imm11) & 0x3ff;
 	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = RLFSX;
@@ -1949,12 +1876,12 @@ LOWER: "sq."^LD LFS^","^l_imm11^"("^IT^")" is l_op7=0x1 & CSTW & CSTX & CSTY & C
 	build CSTZ;
 	build CSTW;
 }
-LOWER: "ilw."^LD IT^","^l_imm11^"("^IS^")"^LD2 is l_op7=0x4 & CILW & IS & IT & LD & LD2 & RIS & l_imm11 {
+LOWER: "ilw."^l_destn IT^","^l_imm11^"("^IS^")"^l_destn2 is l_op7=0x4 & CILW & IS & IT & l_destn & l_destn2 & RIS & l_imm11 {
 	local qa:2 = (RIS + l_imm11) & 0x3ff;
 	tr_ea = 0x0 + zext(qa) * 16;
 	build CILW;
 }
-LOWER: "isw."^LD IT^","^l_imm11^"("^IS^")"^LD2 is l_op7=0x5 & CSTW & CSTX & CSTY & CSTZ & IS & IT & LD & LD2 & RIS & RIT & l_imm11 {
+LOWER: "isw."^l_destn IT^","^l_imm11^"("^IS^")"^l_destn2 is l_op7=0x5 & CSTW & CSTX & CSTY & CSTZ & IS & IT & l_destn & l_destn2 & RIS & RIT & l_imm11 {
 	local qa:2 = (RIS + l_imm11) & 0x3ff;
 	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = zext(RIT);
@@ -2023,7 +1950,7 @@ LOWER: "iand" ID^","^IS^","^IT is l_op7=0x40 & l_op6=0x34 & ID & IS & IT & RIS &
 LOWER: "ior" ID^","^IS^","^IT is l_op7=0x40 & l_op6=0x35 & ID & IS & IT & RIS & RIT & WID & l_dest=0 {
 	WID = RIS | RIT;
 }
-LOWER: "move."^LD LFT^","^LFS is l_op7=0x40 & l_op11=0x33c & CLFTW & CLFTX & CLFTY & CLFTZ & LD & LFS & LFT & RLFSW & RLFSX & RLFSY & RLFSZ {
+LOWER: "move."^l_destn LFT^","^LFS is l_op7=0x40 & l_op11=0x33c & CLFTW & CLFTX & CLFTY & CLFTZ & l_destn & LFS & LFT & RLFSW & RLFSX & RLFSY & RLFSZ {
 	local r_x:4 = RLFSX;
 	local r_y:4 = RLFSY;
 	local r_z:4 = RLFSZ;
@@ -2037,7 +1964,7 @@ LOWER: "move."^LD LFT^","^LFS is l_op7=0x40 & l_op11=0x33c & CLFTW & CLFTX & CLF
 	build CLFTZ;
 	build CLFTW;
 }
-LOWER: "mr32."^LD LFT^","^LFS is l_op7=0x40 & l_op11=0x33d & CLFTW & CLFTX & CLFTY & CLFTZ & LD & LFS & LFT & RLFSW & RLFSX & RLFSY & RLFSZ {
+LOWER: "mr32."^l_destn LFT^","^LFS is l_op7=0x40 & l_op11=0x33d & CLFTW & CLFTX & CLFTY & CLFTZ & l_destn & LFS & LFT & RLFSW & RLFSX & RLFSY & RLFSZ {
 	local r_x:4 = RLFSY;
 	local r_y:4 = RLFSZ;
 	local r_z:4 = RLFSW;
@@ -2051,7 +1978,7 @@ LOWER: "mr32."^LD LFT^","^LFS is l_op7=0x40 & l_op11=0x33d & CLFTW & CLFTX & CLF
 	build CLFTZ;
 	build CLFTW;
 }
-LOWER: "lqi."^LD LFT^",("^IS^"++)" is l_op7=0x40 & l_op11=0x37c & CLFTW & CLFTX & CLFTY & CLFTZ & IS & LD & LFT & RIS & WIS {
+LOWER: "lqi."^l_destn LFT^",("^IS^"++)" is l_op7=0x40 & l_op11=0x37c & CLFTW & CLFTX & CLFTY & CLFTZ & IS & l_destn & LFT & RIS & WIS {
 	local qa:2 = (RIS) & 0x3ff;
 	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = *[vumem]:4 (tr_ea + 0);
@@ -2064,7 +1991,7 @@ LOWER: "lqi."^LD LFT^",("^IS^"++)" is l_op7=0x40 & l_op11=0x37c & CLFTW & CLFTX 
 	build CLFTW;
 	WIS = RIS + 1;
 }
-LOWER: "sqi."^LD LFS^",("^IT^"++)" is l_op7=0x40 & l_op11=0x37d & CSTW & CSTX & CSTY & CSTZ & IT & LD & LFS & RIT & RLFSW & RLFSX & RLFSY & RLFSZ & WIT {
+LOWER: "sqi."^l_destn LFS^",("^IT^"++)" is l_op7=0x40 & l_op11=0x37d & CSTW & CSTX & CSTY & CSTZ & IT & l_destn & LFS & RIT & RLFSW & RLFSX & RLFSY & RLFSZ & WIT {
 	local qa:2 = (RIT) & 0x3ff;
 	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = RLFSX;
@@ -2077,7 +2004,7 @@ LOWER: "sqi."^LD LFS^",("^IT^"++)" is l_op7=0x40 & l_op11=0x37d & CSTW & CSTX & 
 	build CSTW;
 	WIT = RIT + 1;
 }
-LOWER: "lqd."^LD LFT^",(--"^IS^")" is l_op7=0x40 & l_op11=0x37e & CLFTW & CLFTX & CLFTY & CLFTZ & IS & LD & LFT & RIS & WIS {
+LOWER: "lqd."^l_destn LFT^",(--"^IS^")" is l_op7=0x40 & l_op11=0x37e & CLFTW & CLFTX & CLFTY & CLFTZ & IS & l_destn & LFT & RIS & WIS {
 	local dec:2 = RIS - 1;
 	WIS = dec;
 	local qa:2 = (dec) & 0x3ff;
@@ -2091,7 +2018,7 @@ LOWER: "lqd."^LD LFT^",(--"^IS^")" is l_op7=0x40 & l_op11=0x37e & CLFTW & CLFTX 
 	build CLFTZ;
 	build CLFTW;
 }
-LOWER: "sqd."^LD LFS^",(--"^IT^")" is l_op7=0x40 & l_op11=0x37f & CSTW & CSTX & CSTY & CSTZ & IT & LD & LFS & RIT & RLFSW & RLFSX & RLFSY & RLFSZ & WIT {
+LOWER: "sqd."^l_destn LFS^",(--"^IT^")" is l_op7=0x40 & l_op11=0x37f & CSTW & CSTX & CSTY & CSTZ & IT & l_destn & LFS & RIT & RLFSW & RLFSX & RLFSY & RLFSZ & WIT {
 	local dec:2 = RIT - 1;
 	WIT = dec;
 	local qa:2 = (dec) & 0x3ff;
@@ -2131,7 +2058,7 @@ LOWER: "waitq" is l_op7=0x40 & l_op11=0x3bf  & l_dest=0 & l_ft=0 & l_fs=0 {
 LOWER: "mtir" IT^","^l_fs^LFSF is l_op7=0x40 & l_op11=0x3fc & IT & LFSF & RLFSF & WIT & l_fs & l_ftf=0 {
 	WIT = RLFSF:2;
 }
-LOWER: "mfir."^LD LFT^","^IS is l_op7=0x40 & l_op11=0x3fd & CLFTW & CLFTX & CLFTY & CLFTZ & IS & LD & LFT & RIS {
+LOWER: "mfir."^l_destn LFT^","^IS is l_op7=0x40 & l_op11=0x3fd & CLFTW & CLFTX & CLFTY & CLFTZ & IS & l_destn & LFT & RIS {
 	local iv:4 = sext(RIS);
 	tr_x = iv;
 	tr_y = iv;
@@ -2142,12 +2069,12 @@ LOWER: "mfir."^LD LFT^","^IS is l_op7=0x40 & l_op11=0x3fd & CLFTW & CLFTX & CLFT
 	build CLFTZ;
 	build CLFTW;
 }
-LOWER: "ilwr."^LD IT^",("^IS^")"^LD2 is l_op7=0x40 & l_op11=0x3fe & CILW & IS & IT & LD & LD2 & RIS {
+LOWER: "ilwr."^l_destn IT^",("^IS^")"^l_destn2 is l_op7=0x40 & l_op11=0x3fe & CILW & IS & IT & l_destn & l_destn2 & RIS {
 	local qa:2 = (RIS) & 0x3ff;
 	tr_ea = 0x0 + zext(qa) * 16;
 	build CILW;
 }
-LOWER: "iswr."^LD IT^",("^IS^")"^LD2 is l_op7=0x40 & l_op11=0x3ff & CSTW & CSTX & CSTY & CSTZ & IS & IT & LD & LD2 & RIS & RIT {
+LOWER: "iswr."^l_destn IT^",("^IS^")"^l_destn2 is l_op7=0x40 & l_op11=0x3ff & CSTW & CSTX & CSTY & CSTZ & IS & IT & l_destn & l_destn2 & RIS & RIT {
 	local qa:2 = (RIS) & 0x3ff;
 	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = zext(RIT);
@@ -2159,7 +2086,7 @@ LOWER: "iswr."^LD IT^",("^IS^")"^LD2 is l_op7=0x40 & l_op11=0x3ff & CSTW & CSTX 
 	build CSTZ;
 	build CSTW;
 }
-LOWER: "rnext."^LD LFT^",r" is l_op7=0x40 & l_op11=0x43c & CLFTW & CLFTX & CLFTY & CLFTZ & LD & LFT & l_is=0 {
+LOWER: "rnext."^l_destn LFT^",r" is l_op7=0x40 & l_op11=0x43c & CLFTW & CLFTX & CLFTY & CLFTZ & l_destn & LFT & l_is=0 {
 	local fb:4 = ((r >> 4) ^ (r >> 22)) & 1;
 	r = (((r << 1) ^ fb) & 0x7fffff) | 0x3f800000;
 	tr_x = r;
@@ -2171,7 +2098,7 @@ LOWER: "rnext."^LD LFT^",r" is l_op7=0x40 & l_op11=0x43c & CLFTW & CLFTX & CLFTY
 	build CLFTZ;
 	build CLFTW;
 }
-LOWER: "rget."^LD LFT^",r" is l_op7=0x40 & l_op11=0x43d & CLFTW & CLFTX & CLFTY & CLFTZ & LD & LFT & l_is=0 {
+LOWER: "rget."^l_destn LFT^",r" is l_op7=0x40 & l_op11=0x43d & CLFTW & CLFTX & CLFTY & CLFTZ & l_destn & LFT & l_is=0 {
 	tr_x = r;
 	tr_y = r;
 	tr_z = r;
@@ -2187,7 +2114,7 @@ LOWER: "rinit r,"^l_fs^LFSF is l_op7=0x40 & l_op11=0x43e & LFSF & RLFSF & l_fs &
 LOWER: "rxor r,"^l_fs^LFSF is l_op7=0x40 & l_op11=0x43f & LFSF & RLFSF & l_fs & l_ftf=0 & l_ft=0 {
 	r = 0x3f800000 | ((r ^ RLFSF) & 0x7fffff);
 }
-LOWER: "mfp."^LD LFT^",p" is l_op7=0x40 & l_op11=0x67c & CLFTW & CLFTX & CLFTY & CLFTZ & LD & LFT & l_is=0 {
+LOWER: "mfp."^l_destn LFT^",p" is l_op7=0x40 & l_op11=0x67c & CLFTW & CLFTX & CLFTY & CLFTZ & l_destn & LFT & l_is=0 {
 	tr_x = p;
 	tr_y = p;
 	tr_z = p;

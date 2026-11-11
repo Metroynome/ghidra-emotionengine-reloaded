@@ -6,6 +6,10 @@ The language source is generated: edit `gen_slaspec.py`, then run `python gen_sl
 
 The tests run on the standalone languages by default; `VU_EMBED=VU1` (or `VU0`) runs `ghidis.sh` on the R5900 language with that unit's micro mode instead. Every corpus and emulator test passes both ways.
 
+## Running everything
+
+`runall.sh` runs every check below that needs only the local corpora: each disassembly corpus on the standalone language and inside R5900 (VU1 and VU0), and the emulator tests in all four modes. It ends with `ALL PASSED`, and a language that fails to compile fails the run. The corpora are local and gitignored: `sweep.bin`, `dense.bin` and `rand.bin` come from `sweep.py`, their references and `corpus_<game>.bin` from `refdis.py` and `checkgame.sh`, and `semantics_built.txt` from `mktests.py`.
+
 ## Disassembly
 
 | Step | Tool |
@@ -15,8 +19,8 @@ The tests run on the standalone languages by default; `VU_EMBED=VU1` (or `VU0`) 
 | Diff | `compare.py REF GHIDRA` must report every instruction matching |
 
 Corpora:
-- `sweep.py` writes one instruction per opcode value with random operand bits, which also covers each instruction's reserved fields. `bitflip.py` measured those fields.
-- A fully random corpus of 64-bit words covers flag bits, invalid halves and unusual sequences.
+- `sweep.py sweep.bin` writes instructions for every opcode value with random operand bits, which also covers each instruction's reserved fields (the generator's `RESERVED` table lists them); `sweep.py dense.bin 200` writes a denser one.
+- `sweep.py rand.bin random 200000` writes fully random 64-bit words, covering flag bits, invalid halves and unusual sequences.
 - `extract_mpg.py ELF DIR` pulls a game's microcode out of `.vutext`. Game microcode is never committed (see `.gitignore`).
 
 `checkgame.sh ELF NAME` runs the whole check for one game: extract, reference disassembly in the PS2SDK container (`CONTAINER`, default `projectryno-svo75`), Ghidra disassembly, compare, then the import with `verify`.
@@ -40,6 +44,7 @@ Instruction counts include one trailing nop. Some builds also have `.DVP.overlay
 
 ```
 python mktests.py semantics.vut semantics_built.txt     # in the container
+python -c "open('blank.bin', 'wb').write(bytes(1024))"   # any small file to import
 GHIDIS_SCRIPT=EmuVU.java GHIDIS_ARGS=semantics_built.txt bash ghidis.sh blank.bin result.txt
 VU_SLASPEC=vu0.slaspec GHIDIS_SCRIPT=EmuVU.java GHIDIS_ARGS=semantics_built.txt bash ghidis.sh blank.bin result0.txt
 ```

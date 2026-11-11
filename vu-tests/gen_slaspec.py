@@ -153,6 +153,11 @@ fields = '''
 	l_imm24 = (0,23) dec
 	l_b24 = (24,24)
 	l_hi3 = (22,24)
+	# The flags and dest masks again, as named fields for display (see the Display section).
+	u_flagsn = (59,63)
+	u_destn = (53,56)
+	l_destn = (21,24)
+	l_destn2 = (21,24)
 	l_lo6 = (0,5)
 	# Upper instruction (second word).
 	u_word = (32,63)
@@ -196,12 +201,16 @@ for c in LANES:
 	w('attach variables [ %s ] [ %s ];' % (' '.join(f + c for f in ('l_ft', 'l_fs', 'u_ft', 'u_fs', 'u_fd')), regs))
 w('')
 
-# ---- Display tables (unchanged from the disassembly-only version) ----
-for name, field in (('UD', 'u_dest'), ('LD', 'l_dest'), ('LD2', 'l_dest')):
-	for m in range(16):
-		w('%s: "%s" is %s=%d { }' % (name, dest_text(m), field, m))
-for m in range(32):
-	w('UF: "%s" is u_flags=%d { }' % (flags_text(m), m))
+# ---- Display ----
+# The flags and dest masks are names attached to their fields, not subtables. Ghidra caches decoded
+# instructions by a 32-bit hash of the constructors chosen ("trust entirely in hash"), so two
+# instructions whose constructor choices hash alike share one decoding. Subtables for 32 flag sets
+# and 16 masks per half multiplied the distinct choices into the billions, and random code hit a
+# collision; a field's value is not part of the hash.
+# Display-only copies of the fields carry the names: a field shown as an operand cannot also be
+# constrained in a pattern, and patterns constrain u_dest and l_dest.
+w('attach names [ u_flagsn ] [ %s ];' % ' '.join('"%s"' % flags_text(m) for m in range(32)))
+w('attach names [ u_destn l_destn l_destn2 ] [ %s ];' % ' '.join('"%s"' % dest_text(m) for m in range(16)))
 for name, field in (('UBC', 'u_bc'), ('LFSF', 'l_fsf'), ('LFTF', 'l_ftf')):
 	for i, c in enumerate(LANES):
 		w('%s: "%s" is %s=%d { }' % (name, c, field, i))
@@ -731,8 +740,11 @@ for disp, pat, body, kind, ibit in roots:
 				mark, body, end))
 out.insert(UPPER_AT, '# Lane commits: copy tr_<lane> to the destination when its dest bit is set.\n' +
 	'\n'.join(l for t in COMMITS.values() for l in t) + '\n')
+text = '\n'.join(out[:HEADER_AT] + out[HEADER_END:]) if EMBED else '\n'.join(out)
+text = re.sub(r'\bUF\b', 'u_flagsn', text)
+text = re.sub(r'\bUD\b', 'u_destn', text)
+text = re.sub(r'\bLD2\b', 'l_destn2', text)
+text = re.sub(r'\bLD\b', 'l_destn', text)
 if EMBED:
-	text = embed('\n'.join(out[:HEADER_AT] + out[HEADER_END:]))
-else:
-	text = '\n'.join(out)
+	text = embed(text)
 open(path, 'w', newline='\n').write(text + '\n')

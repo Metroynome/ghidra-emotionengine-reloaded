@@ -12,3 +12,4 @@ semantics_built.txt
 *.elf
 allgames_import.txt
 emu_*.txt
+*.gh.txt
