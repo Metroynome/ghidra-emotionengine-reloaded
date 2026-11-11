@@ -11,3 +11,4 @@ semantics_built.txt
 *.vsm
 *.elf
 allgames_import.txt
+emu_*.txt
