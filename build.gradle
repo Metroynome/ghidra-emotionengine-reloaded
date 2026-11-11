@@ -73,6 +73,10 @@ tasks.named('buildExtension', Zip) {
 	exclude '**/vu-tests/**'
 	// Compiled SLEIGH goes stale; Ghidra compiles the specs on first use.
 	exclude '**/*.sla'
+	// Keep real file dates. Ghidra recompiles a script only when its source is newer than the class
+	// it compiled before, so scripts dated 1980 (Gradle's reproducible default) never replace an
+	// earlier version's.
+	preserveFileTimestamps = true
 	// A glob in from() is a path on Windows, so mark the executable by pattern instead.
 	filesMatching('**/stdump') {
 		permissions { unix('rwxr-xr-x') }
