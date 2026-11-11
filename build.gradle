@@ -69,6 +69,10 @@ eclipse.classpath.file.whenMerged {
 }
 
 tasks.named('buildExtension', Zip) {
+	// The VU tests are for development, and a working copy can hold game microcode they extracted.
+	exclude '**/vu-tests/**'
+	// Compiled SLEIGH goes stale; Ghidra compiles the specs on first use.
+	exclude '**/*.sla'
 	// A glob in from() is a path on Windows, so mark the executable by pattern instead.
 	filesMatching('**/stdump') {
 		permissions { unix('rwxr-xr-x') }
