@@ -2,8 +2,9 @@
 
 ## v2.1.39-vu.1
 
-- Added VU micro mode languages for VU0 and VU1 (`VU:LE:32:VU0`, `VU:LE:32:VU1`). Disassembly matches PS2SDK's `dvp-objdump`, and the p-code covers every instruction, including the MAC and status flags.
-- Added `ImportVuMicrocode.java`, which builds a VU program from the VIF MPG uploads in an EE program's `.vutext` (or another section, an address range or bare microcode), with functions at program entries, E-bit ends, subroutines and the addresses EE code passes to MSCAL.
+- Added VU0 and VU1 micro mode (Vector Unit microcode). Disassembly matches PS2SDK's `dvp-objdump`, and the p-code covers every instruction, including the MAC and status flags.
+- The microcode decodes inside the EE program: the new "PS2 VU Microcode" analyzer adds each microprogram uploaded from `.vutext` as an overlay (`vu0_*`, `vu1_*`) at its VU addresses, with functions at its entry points and references from the EE code that starts it (VIF MSCAL, `vcallms`). In raw EE memory dumps it finds the microcode itself. VU0 micro mode shares the COP2 registers with VU0 macro mode, as on hardware.
+- Added `ImportVuMicrocode.java` for other cases: a section or address range, bare microcode, importing again over an earlier import, or separate VU0/VU1 programs (`VU:LE:32:VU0`, `VU:LE:32:VU1`) to view on their own.
 - Release builds include Ghidra 12.0.3 again.
 
 ## v2.1.39
