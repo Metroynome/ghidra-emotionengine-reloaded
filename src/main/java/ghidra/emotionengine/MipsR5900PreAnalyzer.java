@@ -62,6 +62,8 @@ public class MipsR5900PreAnalyzer extends AbstractAnalyzer {
 		pairBitRegister = program.getProgramContext().getRegister("PAIR_INSTRUCTION_FLAG");
 
 		set = removeUninitializedBlock(program, set);
+		// VU microcode (the vu0_* and vu1_* overlays) has no MIPS unaligned load/store pairs.
+		set = ghidra.emotionengine.vu.VuMicrocodeImporter.withoutVuOverlays(program, set);
 
 		final long locationCount = set.getNumAddresses();
 		if (locationCount > NOTIFICATION_INTERVAL) {

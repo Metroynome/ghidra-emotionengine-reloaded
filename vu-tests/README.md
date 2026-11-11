@@ -1,8 +1,10 @@
 # VU micro mode tests
 
-These tests check the `PS2-VU` languages (`VU:LE:32:VU0` and `VU:LE:32:VU1`) against PS2SDK's `dvp-as` and `dvp-objdump`, the GNU toolchain for VU microcode. The reference tools run in a container that has PS2SDK; Ghidra runs headless on the host, using a private settings folder so an installed copy of the extension is never touched.
+These tests check VU micro mode, both inside the R5900 language (`vumicro.sinc`, where the `VUMODE` context selects VU0 or VU1) and in the standalone `PS2-VU` languages (`VU:LE:32:VU0` and `VU:LE:32:VU1`), against PS2SDK's `dvp-as` and `dvp-objdump`, the GNU toolchain for VU microcode. The reference tools run in a container that has PS2SDK; Ghidra runs headless on the host, using a private settings folder so an installed copy of the extension is never touched.
 
-The language source is generated: edit `gen_slaspec.py`, then run `python gen_slaspec.py vu1 ../data/languages/vu1.slaspec` and the same for `vu0`.
+The language source is generated: edit `gen_slaspec.py`, then run `python gen_slaspec.py embed ../data/languages/vumicro.sinc`, `python gen_slaspec.py vu1 ../data/languages/vu1.slaspec` and the same for `vu0`.
+
+The tests run on the standalone languages by default; `VU_EMBED=VU1` (or `VU0`) runs `ghidis.sh` on the R5900 language with that unit's micro mode instead. Every corpus and emulator test passes both ways.
 
 ## Disassembly
 
@@ -44,13 +46,15 @@ VU_SLASPEC=vu0.slaspec GHIDIS_SCRIPT=EmuVU.java GHIDIS_ARGS=semantics_built.txt 
 
 ## Import
 
-`ghrun.sh ELF ImportVuMicrocode.java verify` builds the extension, imports an EE ELF, creates the VU programs from its `.vutext` and decompiles every function, listing each function and its comment. Options (see the script's header) choose another section (`section:NAME`), an address range (`range:START-END`) or bare microcode (`raw:VUADDR`); use `key:value` here, because Windows batch files split arguments at `=`.
+In an EE program the "PS2 VU Microcode" analyzer builds the microcode during auto-analysis: each microprogram becomes an overlay (`vu0_mpg_…`, `vu1_mpg_…`) at its VU addresses, decoded in micro mode, and EE code that starts a program gets a reference to it. `GHRUN_ANALYZE=1 ghrun.sh ELF CheckVuInPlace.java -scriptPath vu-tests` imports an ELF with auto-analysis and checks the result: overlays, functions, EE references, decompilation, and functions or flow overrides Ghidra's other analyzers added. Ghidra's Shared Return Calls analyzer turns jumps into code that several VU functions share into tail calls (`CALL_RETURN`) to a function of its own; the extension's MIPS analyzers leave the VU overlays alone.
 
-Each upload runs on VU0 or VU1, and the import makes one program per unit (`_vu0`, `_vu1`). An upload is VU0's when EE code passes its DMA chain to a function that writes the VIF0 DMA channel's registers (`0x10008000`), as Deadlocked's `VU0_loadMicroProgram` does; everything else, and anything too big for VU0's 4 KB, is VU1's. `VU0` or `VU1` forces one unit; `VU0` refuses uploads that do not fit.
+`ghrun.sh ELF ImportVuMicrocode.java verify` builds the extension, imports an EE ELF, builds the VU code from its `.vutext` (in the program, or with `separate` as programs of their own) and decompiles every function, listing each function and its comment. Options (see the script's header) choose another section (`section:NAME`), an address range (`range:START-END`) or bare microcode (`raw:VUADDR`); use `key:value` here, because Windows batch files split arguments at `=`.
+
+Each upload runs on VU0 or VU1; with `separate` the import makes one program per unit (`_vu0`, `_vu1`). An upload is VU0's when EE code passes its DMA chain to a function that writes the VIF0 DMA channel's registers (`0x10008000`), as Deadlocked's `VU0_loadMicroProgram` does; everything else, and anything too big for VU0's 4 KB, is VU1's. `VU0` or `VU1` forces one unit; `VU0` refuses uploads that do not fit.
 
 The import makes a function at each program entry, after each E bit, at each `bal`/`jalr` target, and at each VU address EE code starts: VIF MSCAL, MSCALF and MSCNT commands, and VU0's `vcallms`. It finds the VIF commands by following constants through each EE function, for example `lui t7,0x1400` / `lui t4,%hi(entry)` / `addiu t4,t4,%lo(entry)` / `sra t4,t4,3` / `or t4,t4,t7`. An entry belongs to the upload the same EE function points at, or else to the one upload that covers the address; otherwise the call is only noted on functions that already start there.
 
-The VU programs are marked as analyzed, and `vu.pspec` turns Ghidra's analyzers off by default for them: they assume a stack and calls that return to the next instruction, and on VU code they turned hand-made calls (a `b` whose delay slot sets `vi15`) into calls that return to the wrong place. `AnalyzeVuCheck.java` runs auto-analysis on the imported programs and reports any change (`ghrun.sh ELF ImportVuMicrocode.java -postScript AnalyzeVuCheck.java -scriptPath vu-tests`). Code that branches outside its own upload gets the one other upload that covers the target added to its overlay, as resident code. MPG commands whose data is not microcode (upper words with reserved bits set) are skipped, so other data sections can be searched.
+Separate VU programs are marked as analyzed, and `vu.pspec` turns Ghidra's analyzers off by default for them: they assume a stack and calls that return to the next instruction, and on VU code they turned hand-made calls (a `b` whose delay slot sets `vi15`) into calls that return to the wrong place. `AnalyzeVuCheck.java` runs auto-analysis on the imported programs and reports any change (`ghrun.sh ELF ImportVuMicrocode.java -postScript AnalyzeVuCheck.java -scriptPath vu-tests`). Code that branches outside its own upload gets the one other upload that covers the target added to its overlay, as resident code. MPG commands whose data is not microcode (upper words with reserved bits set) are skipped, so other data sections can be searched.
 
 `mkimport.py OUT.elf` (in the container) builds a small EE ELF that exercises these: a branch into a resident upload, an MSCAL tied to an upload, and one that is not.
 

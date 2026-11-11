@@ -152,6 +152,11 @@
       </killedbycall>    
     </prototype>
   </default_proto>
+  <!-- VU micro mode code (vumicro.sinc): no EE arguments or return value. -->
+  <prototype name="__vu" extrapop="0" stackshift="0">
+    <input/>
+    <output/>
+  </prototype>
   <callfixup name="dpadd">
     <target name="dpadd"/>
     <pcode>

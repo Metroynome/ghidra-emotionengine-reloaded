@@ -46,6 +46,8 @@ define register offset=0 size=4 [
 define register offset=0x5000 size=4 contextreg;
 define context contextreg
   PAIR_INSTRUCTION_FLAG = (0,0) noflow     # =1 paired unaligned load/store instruction
+  VUMODE = (1,2)                           # 0 EE core code; 1 VU0, 2 VU1 micro mode (vumicro.sinc)
+  VU_ENDSLOT = (3,3) noflow                # VU: runs after an E bit and ends the program
 ;
 
 define token instr(32)

@@ -16,8 +16,24 @@ public class DumpVU extends GhidraScript {
 	@Override
 	protected void run() throws Exception {
 		String out = getScriptArgs()[0];
+		// In the R5900 language, VU microcode decodes where the VUMODE context is 1 (VU0) or 2 (VU1).
+		ghidra.program.model.lang.Register vumode = currentProgram.getRegister("VUMODE");
+		if (vumode != null) {
+			int unit = getScriptArgs().length > 1 && getScriptArgs()[1].equalsIgnoreCase("VU0") ? 1 : 2;
+			for (MemoryBlock block : currentProgram.getMemory().getBlocks()) {
+				if (!block.isInitialized()) {
+					continue;
+				}
+				currentProgram.getProgramContext().setValue(vumode, block.getStart(), block.getEnd(),
+					java.math.BigInteger.valueOf(unit));
+			}
+		}
 		try (PrintWriter w = new PrintWriter(out)) {
 			for (MemoryBlock block : currentProgram.getMemory().getBlocks()) {
+				// The R5900 language adds uninitialized blocks for hardware registers.
+				if (!block.isInitialized()) {
+					continue;
+				}
 				Address start = block.getStart();
 				long size = block.getSize();
 				// Linear, not flow-following, so every slot is decoded, including delay slots.

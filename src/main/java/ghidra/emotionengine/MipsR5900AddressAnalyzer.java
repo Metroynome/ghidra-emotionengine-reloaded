@@ -131,6 +131,13 @@ public class MipsR5900AddressAnalyzer extends ConstantPropagationAnalyzer {
 
 		gp_assumption_value = null;
 
+		// VU microcode (the vu0_* and vu1_* overlays) is not EE code: tracking MIPS registers through
+		// it only makes wrong calls and references.
+		set = ghidra.emotionengine.vu.VuMicrocodeImporter.withoutVuOverlays(program, set);
+		if (set.isEmpty()) {
+			return true;
+		}
+
 		// check for the _gp symbol to see what the global gp value should be
 		checkForGlobalGP(program, set, monitor);
 

@@ -6,6 +6,7 @@
 #  3. System Control Coprocessor (COP0) Instruction Set
 #  4. COP1 (FPU) Instruction Set
 #  5. COP2 (VU) Macro Instruction Set
+#  6. VU0 and VU1 micro mode, where the context register VUMODE says so (vumicro.sinc)
 
 define endian=little;
 define alignment=4;
@@ -14,6 +15,9 @@ define space ram type=ram_space size=4 default;
 define space register type=register_space size=4;
 
 @include "base.sinc"
+
+# The EE core decodes only outside VU microcode.
+with : VUMODE=0 {
 @include "mips.sinc"
 @include "macros.sinc"
 @include "eecore.sinc"
@@ -21,3 +25,7 @@ define space register type=register_space size=4;
 @include "cop1.sinc"
 @include "cop2.sinc"
 @include "mmio.sinc"
+}
+
+# VU0 micro mode uses the COP2 registers cop2.sinc defines.
+@include "vumicro.sinc"

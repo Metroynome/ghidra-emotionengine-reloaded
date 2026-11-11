@@ -77,6 +77,10 @@ define token instr(64)
 	u_op4 = (34,37)
 	u_bc = (32,33)
 	u_op11 = (32,42)
+	# The VI register fields again, for semantics; the fields above are for display.
+	l_itv = (16,20)
+	l_isv = (11,15)
+	l_idv = (6,10)
 	l_ftx = (16,20)
 	l_fty = (16,20)
 	l_ftz = (16,20)
@@ -101,6 +105,7 @@ define token instr(64)
 
 attach variables [ l_ft l_fs l_fd u_ft u_fs u_fd ] [ vf00 vf01 vf02 vf03 vf04 vf05 vf06 vf07 vf08 vf09 vf10 vf11 vf12 vf13 vf14 vf15 vf16 vf17 vf18 vf19 vf20 vf21 vf22 vf23 vf24 vf25 vf26 vf27 vf28 vf29 vf30 vf31 ];
 attach variables [ l_it l_is l_id ] [ vi00 vi01 vi02 vi03 vi04 vi05 vi06 vi07 vi08 vi09 vi10 vi11 vi12 vi13 vi14 vi15 vi16 vi17 vi18 vi19 vi20 vi21 vi22 vi23 vi24 vi25 vi26 vi27 vi28 vi29 vi30 vi31 ];
+attach variables [ l_itv l_isv l_idv ] [ vi00 vi01 vi02 vi03 vi04 vi05 vi06 vi07 vi08 vi09 vi10 vi11 vi12 vi13 vi14 vi15 vi16 vi17 vi18 vi19 vi20 vi21 vi22 vi23 vi24 vi25 vi26 vi27 vi28 vi29 vi30 vi31 ];
 attach variables [ l_ftx l_fsx u_ftx u_fsx u_fdx ] [ vf00_x vf01_x vf02_x vf03_x vf04_x vf05_x vf06_x vf07_x vf08_x vf09_x vf10_x vf11_x vf12_x vf13_x vf14_x vf15_x vf16_x vf17_x vf18_x vf19_x vf20_x vf21_x vf22_x vf23_x vf24_x vf25_x vf26_x vf27_x vf28_x vf29_x vf30_x vf31_x ];
 attach variables [ l_fty l_fsy u_fty u_fsy u_fdy ] [ vf00_y vf01_y vf02_y vf03_y vf04_y vf05_y vf06_y vf07_y vf08_y vf09_y vf10_y vf11_y vf12_y vf13_y vf14_y vf15_y vf16_y vf17_y vf18_y vf19_y vf20_y vf21_y vf22_y vf23_y vf24_y vf25_y vf26_y vf27_y vf28_y vf29_y vf30_y vf31_y ];
 attach variables [ l_ftz l_fsz u_ftz u_fsz u_fdz ] [ vf00_z vf01_z vf02_z vf03_z vf04_z vf05_z vf06_z vf07_z vf08_z vf09_z vf10_z vf11_z vf12_z vf13_z vf14_z vf15_z vf16_z vf17_z vf18_z vf19_z vf20_z vf21_z vf22_z vf23_z vf24_z vf25_z vf26_z vf27_z vf28_z vf29_z vf30_z vf31_z ];
@@ -257,18 +262,18 @@ WUFDZ: is u_fd=0 { export vfsink_z; }
 WUFDZ: is u_fdz { export u_fdz; }
 WUFDW: is u_fd=0 { export vfsink_w; }
 WUFDW: is u_fdw { export u_fdw; }
-RIT: is l_it=0 { export 0:2; }
-RIT: is l_it { export l_it; }
-WIT: is l_it=0 { export visink; }
-WIT: is l_it { export l_it; }
-RIS: is l_is=0 { export 0:2; }
-RIS: is l_is { export l_is; }
-WIS: is l_is=0 { export visink; }
-WIS: is l_is { export l_is; }
-RID: is l_id=0 { export 0:2; }
-RID: is l_id { export l_id; }
-WID: is l_id=0 { export visink; }
-WID: is l_id { export l_id; }
+RIT: is l_itv=0 { export 0:2; }
+RIT: is l_itv { export l_itv; }
+WIT: is l_itv=0 { export visink; }
+WIT: is l_itv { export l_itv; }
+RIS: is l_isv=0 { export 0:2; }
+RIS: is l_isv { export l_isv; }
+WIS: is l_isv=0 { export visink; }
+WIS: is l_isv { export l_isv; }
+RID: is l_idv=0 { export 0:2; }
+RID: is l_idv { export l_idv; }
+WID: is l_idv=0 { export visink; }
+WID: is l_idv { export l_idv; }
 RLFSF: is l_fsf=0 & RLFSX { export RLFSX; }
 RLFSF: is l_fsf=1 & RLFSY { export RLFSY; }
 RLFSF: is l_fsf=2 & RLFSZ { export RLFSZ; }
@@ -1922,7 +1927,7 @@ UPPER: "*unknown*" is u_word { }
 # Lower instructions.
 LOWER: "lq."^LD LFT^","^l_imm11^"("^IS^")" is l_op7=0x0 & CLFTW & CLFTX & CLFTY & CLFTZ & IS & LD & LFT & RIS & l_imm11 {
 	local qa:2 = (RIS + l_imm11) & 0xff;
-	tr_ea = zext(qa) * 16;
+	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = *[vumem]:4 (tr_ea + 0);
 	tr_y = *[vumem]:4 (tr_ea + 4);
 	tr_z = *[vumem]:4 (tr_ea + 8);
@@ -1934,7 +1939,7 @@ LOWER: "lq."^LD LFT^","^l_imm11^"("^IS^")" is l_op7=0x0 & CLFTW & CLFTX & CLFTY 
 }
 LOWER: "sq."^LD LFS^","^l_imm11^"("^IT^")" is l_op7=0x1 & CSTW & CSTX & CSTY & CSTZ & IT & LD & LFS & RIT & RLFSW & RLFSX & RLFSY & RLFSZ & l_imm11 {
 	local qa:2 = (RIT + l_imm11) & 0xff;
-	tr_ea = zext(qa) * 16;
+	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = RLFSX;
 	tr_y = RLFSY;
 	tr_z = RLFSZ;
@@ -1946,12 +1951,12 @@ LOWER: "sq."^LD LFS^","^l_imm11^"("^IT^")" is l_op7=0x1 & CSTW & CSTX & CSTY & C
 }
 LOWER: "ilw."^LD IT^","^l_imm11^"("^IS^")"^LD2 is l_op7=0x4 & CILW & IS & IT & LD & LD2 & RIS & l_imm11 {
 	local qa:2 = (RIS + l_imm11) & 0xff;
-	tr_ea = zext(qa) * 16;
+	tr_ea = 0x0 + zext(qa) * 16;
 	build CILW;
 }
 LOWER: "isw."^LD IT^","^l_imm11^"("^IS^")"^LD2 is l_op7=0x5 & CSTW & CSTX & CSTY & CSTZ & IS & IT & LD & LD2 & RIS & RIT & l_imm11 {
 	local qa:2 = (RIS + l_imm11) & 0xff;
-	tr_ea = zext(qa) * 16;
+	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = zext(RIT);
 	tr_y = zext(RIT);
 	tr_z = zext(RIT);
@@ -2048,7 +2053,7 @@ LOWER: "mr32."^LD LFT^","^LFS is l_op7=0x40 & l_op11=0x33d & CLFTW & CLFTX & CLF
 }
 LOWER: "lqi."^LD LFT^",("^IS^"++)" is l_op7=0x40 & l_op11=0x37c & CLFTW & CLFTX & CLFTY & CLFTZ & IS & LD & LFT & RIS & WIS {
 	local qa:2 = (RIS) & 0xff;
-	tr_ea = zext(qa) * 16;
+	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = *[vumem]:4 (tr_ea + 0);
 	tr_y = *[vumem]:4 (tr_ea + 4);
 	tr_z = *[vumem]:4 (tr_ea + 8);
@@ -2061,7 +2066,7 @@ LOWER: "lqi."^LD LFT^",("^IS^"++)" is l_op7=0x40 & l_op11=0x37c & CLFTW & CLFTX 
 }
 LOWER: "sqi."^LD LFS^",("^IT^"++)" is l_op7=0x40 & l_op11=0x37d & CSTW & CSTX & CSTY & CSTZ & IT & LD & LFS & RIT & RLFSW & RLFSX & RLFSY & RLFSZ & WIT {
 	local qa:2 = (RIT) & 0xff;
-	tr_ea = zext(qa) * 16;
+	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = RLFSX;
 	tr_y = RLFSY;
 	tr_z = RLFSZ;
@@ -2076,7 +2081,7 @@ LOWER: "lqd."^LD LFT^",(--"^IS^")" is l_op7=0x40 & l_op11=0x37e & CLFTW & CLFTX 
 	local dec:2 = RIS - 1;
 	WIS = dec;
 	local qa:2 = (dec) & 0xff;
-	tr_ea = zext(qa) * 16;
+	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = *[vumem]:4 (tr_ea + 0);
 	tr_y = *[vumem]:4 (tr_ea + 4);
 	tr_z = *[vumem]:4 (tr_ea + 8);
@@ -2090,7 +2095,7 @@ LOWER: "sqd."^LD LFS^",(--"^IT^")" is l_op7=0x40 & l_op11=0x37f & CSTW & CSTX & 
 	local dec:2 = RIT - 1;
 	WIT = dec;
 	local qa:2 = (dec) & 0xff;
-	tr_ea = zext(qa) * 16;
+	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = RLFSX;
 	tr_y = RLFSY;
 	tr_z = RLFSZ;
@@ -2139,12 +2144,12 @@ LOWER: "mfir."^LD LFT^","^IS is l_op7=0x40 & l_op11=0x3fd & CLFTW & CLFTX & CLFT
 }
 LOWER: "ilwr."^LD IT^",("^IS^")"^LD2 is l_op7=0x40 & l_op11=0x3fe & CILW & IS & IT & LD & LD2 & RIS {
 	local qa:2 = (RIS) & 0xff;
-	tr_ea = zext(qa) * 16;
+	tr_ea = 0x0 + zext(qa) * 16;
 	build CILW;
 }
 LOWER: "iswr."^LD IT^",("^IS^")"^LD2 is l_op7=0x40 & l_op11=0x3ff & CSTW & CSTX & CSTY & CSTZ & IS & IT & LD & LD2 & RIS & RIT {
 	local qa:2 = (RIS) & 0xff;
-	tr_ea = zext(qa) * 16;
+	tr_ea = 0x0 + zext(qa) * 16;
 	tr_x = zext(RIT);
 	tr_y = zext(RIT);
 	tr_z = zext(RIT);
