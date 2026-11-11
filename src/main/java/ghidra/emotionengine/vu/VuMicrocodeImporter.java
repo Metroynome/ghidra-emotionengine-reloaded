@@ -78,12 +78,14 @@ public class VuMicrocodeImporter {
 		long vuAddress;           // VU micro memory address in bytes
 		byte[] code;
 		String unit;
+		boolean assumed;          // no EE code says which unit
 	}
 
 	/** One microprogram: consecutive uploads to consecutive addresses on one unit. */
 	public static class Microprogram {
 		public String name;
 		public String unit;
+		public boolean assumed;   // some upload's unit was assumed (see Upload)
 		public long source;       // EE address of the first MPG command (or of raw code)
 		public long vuAddress;
 		ByteArrayOutputStream code = new ByteArrayOutputStream();
@@ -117,6 +119,15 @@ public class VuMicrocodeImporter {
 	private int uploads, rejected;
 	private final List<EeCall> eeCalls = new ArrayList<>();
 	private final Set<Long> vu0Chains = new TreeSet<>();
+	private final Set<Long> eeChainRefs = new TreeSet<>();     // microcode addresses EE code points at
+	private int assumed;
+
+	/** Uploads whose unit no EE code gave, so VU1 was assumed. */
+	public int assumedUploads() {
+		return assumed;
+	}
+
+	public static final String ASSUMED_NOTE = "Unit not known from this program's EE code: nothing here sends this upload's DMA chain, so VU1 is assumed. A memory dump with the code that sends it can tell.";
 	private final List<long[]> vif0Senders = new ArrayList<>();
 	private long srcLo, srcHi;
 
@@ -211,6 +222,37 @@ public class VuMicrocodeImporter {
 		return zero * 4 > length / 4 * 3;                       // more than 3/4 of the words
 	}
 
+	/**
+	 * Removes the VU overlays an earlier import made, with their functions and the references EE code
+	 * has to them, so the microcode can be imported again.
+	 *
+	 * @return how many overlay blocks were removed
+	 */
+	public static int removeVuOverlays(Program program, TaskMonitor monitor) throws Exception {
+		List<MemoryBlock> blocks = new ArrayList<>();
+		for (MemoryBlock b : program.getMemory().getBlocks()) {
+			if (b.isOverlay() && (b.getName().startsWith(OVERLAY_PREFIX_VU0) || b.getName().startsWith(OVERLAY_PREFIX_VU1))) {
+				blocks.add(b);
+			}
+		}
+		int tx = program.startTransaction("Remove VU microcode");
+		try {
+			for (MemoryBlock b : blocks) {
+				for (Address a : program.getReferenceManager().getReferenceDestinationIterator(
+						new AddressSet(b.getStart(), b.getEnd()), true)) {
+					for (ghidra.program.model.symbol.Reference r : program.getReferenceManager().getReferencesTo(a)) {
+						program.getReferenceManager().delete(r);
+					}
+				}
+				program.getMemory().removeBlock(b, monitor);
+			}
+		}
+		finally {
+			program.endTransaction(tx, true);
+		}
+		return blocks.size();
+	}
+
 	/** The set without the VU overlays, for EE-only analysis. */
 	public static ghidra.program.model.address.AddressSetView withoutVuOverlays(Program program,
 			ghidra.program.model.address.AddressSetView set) {
@@ -271,7 +313,19 @@ public class VuMicrocodeImporter {
 		}
 		List<String> tooBig = new ArrayList<>();
 		for (Upload u : found) {
-			u.unit = !mode.equals("AUTO") ? mode : raw == null && inVu0Chain(u) ? "VU0" : "VU1";
+			// An upload is VU0's when its chain goes through VIF0, and known to be VU1's when it is too
+			// big for VU0 or EE code points at its chain some other way (as VU1_addDataRef does).
+			// Otherwise nothing here says, and VU1, the usual unit for uploaded microcode, is assumed.
+			if (!mode.equals("AUTO") || raw != null) {
+				u.unit = raw != null && mode.equals("AUTO") ? "VU1" : mode;
+			}
+			else if (inVu0Chain(u)) {
+				u.unit = "VU0";
+			}
+			else {
+				u.unit = "VU1";
+				u.assumed = !inPacket(eeChainRefs, u.source);
+			}
 			if (u.unit.equals("VU0") && u.vuAddress + u.code.length > MEMORY_SIZE.get("VU0")) {
 				if (mode.equals("VU0")) {
 					tooBig.add(String.format("%08x (VU 0x%04x-0x%04x)", u.source, u.vuAddress,
@@ -287,6 +341,22 @@ public class VuMicrocodeImporter {
 			log.accept(String.format("%d uploads do not fit in VU0's 4 KB of micro memory, so they are not VU0 " +
 				"code: %s. Use auto or VU1.", tooBig.size(), String.join(", ", tooBig)));
 			return null;
+		}
+		// A run of uploads to consecutive addresses is one program: one that is known to be VU1's, or
+		// too big for VU0, settles the rest of its run.
+		for (int a = 0, b; a < found.size(); a = b) {
+			long end = found.get(a).vuAddress + found.get(a).code.length;
+			boolean known = !found.get(a).assumed;
+			for (b = a + 1; b < found.size() && found.get(b).unit.equals(found.get(a).unit)
+				&& found.get(b).vuAddress == end; b++) {
+				end += found.get(b).code.length;
+				known |= !found.get(b).assumed;
+			}
+			for (int k = a; k < b; k++) {
+				Upload u = found.get(k);
+				u.assumed = u.assumed && !known && end <= MEMORY_SIZE.get("VU0");
+				assumed += u.assumed ? 1 : 0;
+			}
 		}
 		return group(found, raw != null);
 	}
@@ -323,7 +393,7 @@ public class VuMicrocodeImporter {
 					new ByteArrayInputStream(code), code.length, monitor, true);
 				block.setExecute(true);
 				block.setComment(String.format("%s %s at %08x in %s", unit, mp.name.startsWith("raw")
-					? "microcode" : "VIF MPG upload", mp.source, ee.getName()));
+					? "microcode" : "VIF MPG upload", mp.source, ee.getName()) + (mp.assumed ? ". " + ASSUMED_NOTE : ""));
 				mp.space = block.getStart().getAddressSpace();
 				setMode(vu, vumode, mode, block);
 				disassemble(vu, mp);
@@ -419,6 +489,12 @@ public class VuMicrocodeImporter {
 					result.eeUsed += n > 0 ? 1 : 0;
 				}
 				writeNotes(notes);
+			}
+			for (Microprogram mp : programs) {
+				Function f = mp.assumed ? vu.getFunctionManager().getFunctionAt(at(mp, mp.vuAddress)) : null;
+				if (f != null) {
+					f.setComment(f.getComment() == null ? ASSUMED_NOTE : ASSUMED_NOTE + "\n" + f.getComment());
+				}
 			}
 
 			for (Function f : functions) {
@@ -559,11 +635,13 @@ public class VuMicrocodeImporter {
 			if (current == null || !current.unit.equals(u.unit) || u.vuAddress != current.end()) {
 				current = new Microprogram();
 				current.unit = u.unit;
+				current.assumed = u.assumed;
 				current.source = u.source;
 				current.vuAddress = u.vuAddress;
 				current.name = String.format(raw ? "raw_%08x" : "mpg_%08x", u.source);
 				out.add(current);
 			}
+			current.assumed |= u.assumed;
 			current.code.write(u.code, 0, u.code.length);
 		}
 		return out;
@@ -593,35 +671,77 @@ public class VuMicrocodeImporter {
 	// ---- DMA chains ----
 
 	/**
-	 * The end of the DMA chain that starts at ref: cnt tags (id 1) continue to the next tag, an end
-	 * tag (id 7) ends after its data. Each tag is 16 bytes followed by QWC quadwords. If ref is not a
-	 * tag, the chain is taken to be the 256 bytes from ref.
+	 * The DMA tag at a, if a holds one as .vutext's chains do: 16-byte aligned, id cnt (1) or end (7),
+	 * reserved bits clear and the address word zero. Returns the tag's first word, or null.
 	 */
-	public long chainEnd(long ref) {
-		long pos = ref;
+	private Integer tagAt(long a) {
+		if ((a & 15) != 0) {
+			return null;
+		}
 		try {
-			for (int k = 0; k < 4096; k++) {
-				int tag = ee.getMemory().getInt(eeAddress(pos));
-				int qwc = tag & 0xffff, id = (tag >>> 28) & 7;
-				long next = pos + 16 + 16L * qwc;
-				if (id == 7) {
-					return next;
-				}
-				if (id != 1) {
-					break;
-				}
-				pos = next;
-			}
+			int w0 = ee.getMemory().getInt(eeAddress(a));
+			int w1 = ee.getMemory().getInt(eeAddress(a + 4));
+			int id = (w0 >>> 28) & 7;
+			return (id == 1 || id == 7) && (w0 & 0x0fff0000) == 0 && w1 == 0 ? w0 : null;
 		}
 		catch (Exception e) {
-			// not readable as a tag
+			return null;
 		}
-		return pos > ref ? pos : ref + 0x100;
+	}
+
+	/**
+	 * The end of the DMA chain that starts at ref (or at the tag just before ref), as VIF0 chain mode
+	 * runs it: cnt tags continue to the next tag, an end tag ends after its data. Each tag is 16 bytes
+	 * followed by QWC quadwords. If there is no tag, the chain is taken to be the 256 bytes from ref.
+	 */
+	public long chainEnd(long ref) {
+		long pos = tagAt(ref) != null ? ref : tagAt(ref - 16) != null ? ref - 16 : -1;
+		if (pos < 0) {
+			return ref + 0x100;
+		}
+		for (int k = 0; k < 4096; k++) {
+			Integer tag = tagAt(pos);
+			if (tag == null) {
+				break;
+			}
+			long next = pos + 16 + 16L * (tag & 0xffff);
+			if (((tag >>> 28) & 7) == 7) {
+				return next;
+			}
+			pos = next;
+		}
+		return pos;
+	}
+
+	/**
+	 * The end of the one DMA packet at ref: the tag at ref or just before it, and its QWC quadwords.
+	 * EE code that sends a packet by reference (as VU1_addDataRef does, with the tag's QWC) sends only
+	 * that packet, not the chain a cnt tag continues into.
+	 */
+	public long packetEnd(long ref) {
+		Integer tag = tagAt(ref);
+		if (tag != null) {
+			return ref + 16 + 16L * (tag & 0xffff);
+		}
+		tag = tagAt(ref - 16);
+		if (tag != null) {
+			return ref + 16L * (tag & 0xffff);
+		}
+		return ref + 0x100;
 	}
 
 	private boolean inVu0Chain(Upload u) {
 		for (long ref : vu0Chains) {
 			if (u.source >= ref && u.source < chainEnd(ref)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean inPacket(Set<Long> refs, long source) {
+		for (long ref : refs) {
+			if (source >= ref && source < packetEnd(ref)) {
 				return true;
 			}
 		}
@@ -696,6 +816,23 @@ public class VuMicrocodeImporter {
 			}
 		});
 		forEachFunction((block, ins, from, to) -> scanFunction(block, ins, from, to, true));
+		// EE code also reaches chains through pointer tables in data: aligned words that point exactly
+		// at a chain's DMA tag, or just past it.
+		for (MemoryBlock block : ee.getMemory().getBlocks()) {
+			if (!block.isInitialized() || block.isOverlay() || !block.getStart().getAddressSpace().isMemorySpace()) {
+				continue;
+			}
+			long base = block.getStart().getOffset();
+			byte[] bytes = new byte[(int) Math.min(block.getSize(), Integer.MAX_VALUE - 8) & ~3];
+			block.getBytes(block.getStart(), bytes);
+			for (int k = 0; k + 4 <= bytes.length; k += 4) {
+				long v = word(bytes, k) & 0xffffffffL;
+				if (v >= srcLo && v < srcHi && (base + k < srcLo || base + k >= srcHi)
+					&& (tagAt(v) != null || tagAt(v - 16) != null)) {
+					eeChainRefs.add(v);
+				}
+			}
+		}
 	}
 
 	/** Whether the function builds lui r,0x1000 / ori r,r,0x80xx: a VIF0 DMA channel register. */
@@ -850,6 +987,7 @@ public class VuMicrocodeImporter {
 			}
 		}
 		if (record) {
+			eeChainRefs.addAll(refs);
 			for (long[] s : starts) {
 				Address site = block.getStart().add(4 * s[2]);
 				eeCalls.add(s[0] < 0 ? new EeCall("vcallms", s[1], site, Set.of(), "VU0")
@@ -879,7 +1017,7 @@ public class VuMicrocodeImporter {
 		List<Microprogram> named = new ArrayList<>();
 		for (Microprogram mp : all) {
 			for (long ref : call.vutextRefs()) {
-				if (mp.source >= ref && mp.source < chainEnd(ref)) {
+				if (mp.source >= ref && mp.source < packetEnd(ref)) {
 					named.add(mp);
 				}
 			}

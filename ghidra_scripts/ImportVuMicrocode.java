@@ -10,6 +10,7 @@
 // Manager without arguments, the script asks for them.
 //   auto | VU0 | VU1   which unit the uploads run on (default auto; VU0 or VU1 puts all on one)
 //   separate           make a program per unit (name_vu0, name_vu1) instead of overlays in this one
+//   replace            first remove the VU overlays (and EE references to them) an earlier import made
 //   section:NAME       read microcode from this EE section instead of .vutext
 //   range:START-END    read microcode from these EE addresses (hex, END exclusive)
 //   raw:VUADDR         the bytes are bare microcode for VU address VUADDR (hex), not VIF packets
@@ -42,10 +43,10 @@ public class ImportVuMicrocode extends GhidraScript {
 		String mode = "AUTO", section = null, show = null;
 		Address rangeStart = null, rangeEnd = null;
 		Long raw = null;
-		boolean verify = false, eeEntries = true, separate = false;
+		boolean verify = false, eeEntries = true, separate = false, replace = false;
 		String[] args = getScriptArgs();
 		if (args.length == 0 && !isRunningHeadless()) {
-			args = askString("Import VU microcode", "Options: auto | VU0 | VU1, separate, section:NAME, " +
+			args = askString("Import VU microcode", "Options: auto | VU0 | VU1, separate, replace, section:NAME, " +
 				"range:START-END, raw:VUADDR, noentries, verify", "auto").trim().split("\\s+");
 		}
 		for (String arg : args) {
@@ -67,6 +68,9 @@ public class ImportVuMicrocode extends GhidraScript {
 			else if (lower.equals("separate")) {
 				separate = true;
 			}
+			else if (lower.equals("replace")) {
+				replace = true;
+			}
 			else if (lower.startsWith("section=")) {
 				section = a.substring(8);
 			}
@@ -86,8 +90,11 @@ public class ImportVuMicrocode extends GhidraScript {
 			}
 		}
 		boolean inPlace = !separate && VuMicrocodeImporter.supportsInPlace(currentProgram);
+		if (inPlace && replace) {
+			println(String.format("Removed %d VU overlays", VuMicrocodeImporter.removeVuOverlays(currentProgram, monitor)));
+		}
 		if (inPlace && VuMicrocodeImporter.hasVuOverlays(currentProgram)) {
-			printerr("This program already has VU overlays (vu0_*, vu1_*). Remove them first, or use separate.");
+			printerr("This program already has VU overlays (vu0_*, vu1_*). Use replace to import again, or separate.");
 			return;
 		}
 
@@ -144,6 +151,10 @@ public class ImportVuMicrocode extends GhidraScript {
 		if (mode.equals("AUTO") && raw == null) {
 			println(String.format("VU0: %d chains sent through VIF0 by %d EE functions", importer.vu0Chains().size(),
 				importer.vif0Senders()));
+			if (importer.assumedUploads() > 0) {
+				println(String.format("%d uploads that no EE code here sends: VU1 assumed (noted in their comments)",
+					importer.assumedUploads()));
+			}
 			for (long chain : importer.vu0Chains()) {
 				println(String.format("VU0 chain %08x-%08x", chain, importer.chainEnd(chain)));
 			}

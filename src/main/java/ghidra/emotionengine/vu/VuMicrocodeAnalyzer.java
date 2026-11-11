@@ -84,6 +84,10 @@ public class VuMicrocodeAnalyzer extends AbstractAnalyzer {
 		if (all == null || all.isEmpty()) {
 			return false;
 		}
+		if (importer.assumedUploads() > 0) {
+			log.appendMsg(NAME, String.format("%d uploads that no EE code here sends: VU1 assumed (noted in their " +
+				"comments)", importer.assumedUploads()));
+		}
 		for (Map.Entry<String, List<VuMicrocodeImporter.Microprogram>> e : VuMicrocodeImporter.byUnit(all).entrySet()) {
 			monitor.checkCancelled();
 			VuMicrocodeImporter.UnitResult r = importer.build(e.getKey(), e.getValue(), all, program, null, true, this);
