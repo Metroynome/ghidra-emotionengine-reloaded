@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*'
+  # Run by hand from the Actions tab (for a release, pick the tag as the ref).
+  workflow_dispatch:
 
 permissions:
   contents: write
