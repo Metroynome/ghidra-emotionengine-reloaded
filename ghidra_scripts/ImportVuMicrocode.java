@@ -3,7 +3,8 @@
 // In the R5900 language each microprogram becomes an overlay in this program (vu0_* or vu1_*),
 // decoded in VU micro mode, and EE code that starts a program gets a reference to it. The "PS2 VU
 // Microcode" analyzer does the same for .vutext during auto-analysis; this script is for other
-// places (a raw memory dump has no .vutext section) or for separate programs.
+// places or for separate programs. Without a .vutext section, range: or section:, it looks for the
+// microcode's DMA chains itself, as the analyzer does (for example in a raw EE memory dump).
 //
 // Script arguments, all optional, in any order (key:value or key=value). Run from the Script
 // Manager without arguments, the script asks for them.
@@ -17,6 +18,7 @@
 //   show:FUNCTION      with verify, print that function's C
 //@category ghidra-emotionengine
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -89,23 +91,41 @@ public class ImportVuMicrocode extends GhidraScript {
 			return;
 		}
 
-		// The bytes to read.
-		Address sourceStart;
-		byte[] data;
+		// The bytes to read: a range, a section (.vutext by default), or, with neither, the regions
+		// of microcode found in the program (as in a raw EE memory dump).
+		List<long[]> regions = new ArrayList<>();
 		if (rangeStart != null) {
-			sourceStart = rangeStart;
-			data = new byte[(int) (rangeEnd.getOffset() - rangeStart.getOffset())];
+			regions.add(new long[] { rangeStart.getOffset(), rangeEnd.getOffset() });
 		}
 		else {
 			String blockName = section != null ? section : ".vutext";
 			MemoryBlock block = currentProgram.getMemory().getBlock(blockName);
-			if (block == null) {
+			if (block != null) {
+				regions.add(new long[] { block.getStart().getOffset(), block.getEnd().getOffset() + 1 });
+			}
+			else if (section != null || raw != null) {
 				printerr("This program has no " + blockName + " section. Give section= or range=.");
 				return;
 			}
-			sourceStart = block.getStart();
-			data = new byte[(int) block.getSize()];
+			else {
+				regions.addAll(VuMicrocodeImporter.findMicrocode(currentProgram, monitor));
+				for (long[] r : regions) {
+					println(String.format("Microcode found at %08x-%08x", r[0], r[1]));
+				}
+				if (regions.isEmpty()) {
+					printerr("This program has no .vutext section and no microcode was found. Give range=.");
+					return;
+				}
+			}
 		}
+		for (long[] region : regions) {
+			importRegion(toAddr(region[0]), region[1], mode, raw, eeEntries, inPlace, verify, show);
+		}
+	}
+
+	private void importRegion(Address sourceStart, long end, String mode, Long raw, boolean eeEntries,
+			boolean inPlace, boolean verify, String show) throws Exception {
+		byte[] data = new byte[(int) (end - sourceStart.getOffset())];
 		currentProgram.getMemory().getBytes(sourceStart, data);
 
 		VuMicrocodeImporter importer = new VuMicrocodeImporter(currentProgram, monitor, this::println);

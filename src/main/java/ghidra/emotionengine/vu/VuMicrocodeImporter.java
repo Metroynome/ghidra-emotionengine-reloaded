@@ -142,6 +142,75 @@ public class VuMicrocodeImporter {
 		return false;
 	}
 
+	/**
+	 * Finds microcode in a program that has no .vutext section, such as a raw EE memory dump: runs of
+	 * VIF MPG uploads whose data is microcode. An upload must be mostly non-zero words (a stray
+	 * 0x4a000000 followed by zeros would otherwise pass as 256 instructions), and a region needs at
+	 * least two uploads, each within 0x40 bytes of the previous one's end, as uploads in DMA chains
+	 * are. Each region starts at the 16-byte boundary before its first MPG command, to take in the DMA
+	 * tag that EE code points at.
+	 *
+	 * @return [start, end) EE address pairs
+	 */
+	public static List<long[]> findMicrocode(Program program, TaskMonitor monitor) throws Exception {
+		List<long[]> regions = new ArrayList<>();
+		for (MemoryBlock block : program.getMemory().getBlocks()) {
+			if (!block.isInitialized() || block.isOverlay() || !block.getStart().getAddressSpace().isMemorySpace()
+				|| block.getName().startsWith("vu0.") || block.getName().startsWith("vu1.")) {
+				continue;
+			}
+			long base = block.getStart().getOffset();
+			byte[] data = new byte[(int) Math.min(block.getSize(), Integer.MAX_VALUE - 8)];
+			block.getBytes(block.getStart(), data);
+			long regionStart = -1, lastEnd = -1;
+			int count = 0;
+			for (int i = 4; i + 4 <= data.length; i += 8) {      // MPG data starts on a 64-bit boundary
+				if (i % 0x100000 == 4) {
+					monitor.checkCancelled();
+				}
+				int code = word(data, i);
+				if (((code >>> 24) & 0x7f) != VIF_MPG) {
+					continue;
+				}
+				int num = (code >>> 16) & 0xff;
+				num = num == 0 ? 256 : num;
+				long address = (code & 0xffffL) * 8;
+				int length = num * 8;
+				if (i + 4 + length > data.length || address + length > MEMORY_SIZE.get("VU1")
+					|| !isMicrocode(data, i + 4, num) || mostlyZero(data, i + 4, length)) {
+					continue;
+				}
+				long source = base + i, end = source + 4 + length;
+				if (lastEnd >= 0 && source - lastEnd <= 0x40) {
+					count++;
+				}
+				else {
+					if (count >= 2) {
+						regions.add(new long[] { regionStart, (lastEnd + 15) & ~15L });
+					}
+					regionStart = source & ~15L;
+					count = 1;
+				}
+				lastEnd = end;
+				i += length;                                      // resume after the data (still i % 8 == 4)
+			}
+			if (count >= 2) {
+				regions.add(new long[] { regionStart, Math.min((lastEnd + 15) & ~15L, base + data.length) });
+			}
+		}
+		return regions;
+	}
+
+	private static boolean mostlyZero(byte[] data, int at, int length) {
+		int zero = 0;
+		for (int k = 0; k < length; k += 4) {
+			if (word(data, at + k) == 0) {
+				zero++;
+			}
+		}
+		return zero * 4 > length / 4 * 3;                       // more than 3/4 of the words
+	}
+
 	/** The set without the VU overlays, for EE-only analysis. */
 	public static ghidra.program.model.address.AddressSetView withoutVuOverlays(Program program,
 			ghidra.program.model.address.AddressSetView set) {

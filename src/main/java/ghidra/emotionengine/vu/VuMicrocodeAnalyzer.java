@@ -7,6 +7,7 @@ import ghidra.app.services.AbstractAnalyzer;
 import ghidra.app.services.AnalysisPriority;
 import ghidra.app.services.AnalyzerType;
 import ghidra.app.util.importer.MessageLog;
+import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSetView;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.mem.MemoryBlock;
@@ -23,7 +24,8 @@ public class VuMicrocodeAnalyzer extends AbstractAnalyzer {
 
 	private static final String NAME = "PS2 VU Microcode";
 	private static final String DESCRIPTION =
-		"Decodes the VU0 and VU1 microcode uploaded by the VIF MPG commands in .vutext. Each microprogram " +
+		"Decodes the VU0 and VU1 microcode uploaded by the VIF MPG commands in .vutext, or, in a program " +
+		"without .vutext such as a raw EE memory dump, in the DMA chains of MPG uploads it finds. Each microprogram " +
 		"becomes an overlay (vu0_* or vu1_*) at its VU micro memory addresses, with functions at its entry " +
 		"points and references from the EE code that starts it (VIF MSCAL, vcallms).";
 
@@ -38,7 +40,7 @@ public class VuMicrocodeAnalyzer extends AbstractAnalyzer {
 
 	@Override
 	public boolean canAnalyze(Program program) {
-		return VuMicrocodeImporter.supportsInPlace(program) && program.getMemory().getBlock(".vutext") != null;
+		return VuMicrocodeImporter.supportsInPlace(program);
 	}
 
 	@Override
@@ -47,26 +49,22 @@ public class VuMicrocodeAnalyzer extends AbstractAnalyzer {
 		if (VuMicrocodeImporter.hasVuOverlays(program)) {
 			return true;
 		}
-		MemoryBlock vutext = program.getMemory().getBlock(".vutext");
-		if (vutext == null || !vutext.isInitialized() || !set.intersects(vutext.getStart(), vutext.getEnd())) {
-			return false;
-		}
 		try {
-			byte[] data = new byte[(int) vutext.getSize()];
-			vutext.getBytes(vutext.getStart(), data);
-			VuMicrocodeImporter importer = new VuMicrocodeImporter(program, monitor, s -> log.appendMsg(NAME, s));
-			List<VuMicrocodeImporter.Microprogram> all = importer.read(vutext.getStart(), data, "AUTO", null, true);
-			if (all == null || all.isEmpty()) {
-				return false;
+			MemoryBlock vutext = program.getMemory().getBlock(".vutext");
+			if (vutext != null) {
+				if (!vutext.isInitialized() || !set.intersects(vutext.getStart(), vutext.getEnd())) {
+					return false;
+				}
+				return importRange(program, vutext.getStart(), vutext.getEnd().getOffset() + 1, monitor, log);
 			}
-			for (Map.Entry<String, List<VuMicrocodeImporter.Microprogram>> e : VuMicrocodeImporter.byUnit(all)
-					.entrySet()) {
-				monitor.checkCancelled();
-				VuMicrocodeImporter.UnitResult r = importer.build(e.getKey(), e.getValue(), all, program, null, true, this);
-				log.appendMsg(NAME, String.format("%s: %d microprograms, %d functions", e.getKey(), r.programs.size(),
-					r.functions.size()));
+			// No .vutext, as in a raw EE memory dump: look for the microcode's DMA chains.
+			boolean any = false;
+			for (long[] r : VuMicrocodeImporter.findMicrocode(program, monitor)) {
+				log.appendMsg(NAME, String.format("Microcode found at %08x-%08x", r[0], r[1]));
+				Address start = program.getAddressFactory().getDefaultAddressSpace().getAddress(r[0]);
+				any |= importRange(program, start, r[1], monitor, log);
 			}
-			return true;
+			return any;
 		}
 		catch (CancelledException e) {
 			throw e;
@@ -75,5 +73,23 @@ public class VuMicrocodeAnalyzer extends AbstractAnalyzer {
 			log.appendException(e);
 			return false;
 		}
+	}
+
+	private boolean importRange(Program program, Address start, long end, TaskMonitor monitor, MessageLog log)
+			throws Exception {
+		byte[] data = new byte[(int) (end - start.getOffset())];
+		program.getMemory().getBytes(start, data);
+		VuMicrocodeImporter importer = new VuMicrocodeImporter(program, monitor, s -> log.appendMsg(NAME, s));
+		List<VuMicrocodeImporter.Microprogram> all = importer.read(start, data, "AUTO", null, true);
+		if (all == null || all.isEmpty()) {
+			return false;
+		}
+		for (Map.Entry<String, List<VuMicrocodeImporter.Microprogram>> e : VuMicrocodeImporter.byUnit(all).entrySet()) {
+			monitor.checkCancelled();
+			VuMicrocodeImporter.UnitResult r = importer.build(e.getKey(), e.getValue(), all, program, null, true, this);
+			log.appendMsg(NAME, String.format("%s: %d microprograms, %d functions", e.getKey(), r.programs.size(),
+				r.functions.size()));
+		}
+		return true;
 	}
 }
